@@ -91,7 +91,7 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void send(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createMessage(appId, "SEND", query, payload);
+        final var msg = createMessage("SEND", appId, query, payload);
         socket.send(msg);
     }
     
@@ -106,7 +106,7 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void broadcast(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createMessage(appId, "BROADCAST", query, payload);
+        final var msg = createMessage("BROADCAST", appId, query, payload);
         socket.send(msg);
     }
     

@@ -91,7 +91,7 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void send(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createMessage("SEND", appId, query, payload);
+        final var msg = createDispatch("SEND", appId, query, payload);
         socket.send(msg);
     }
     
@@ -106,12 +106,20 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void broadcast(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createMessage("BROADCAST", appId, query, payload);
+        final var msg = createDispatch("BROADCAST", appId, query, payload);
         socket.send(msg);
     }
     
-    private <T> SingyeongMessage createMessage(@Nonnull final String type, @Nonnull final String appId,
-                                               @Nonnull final JsonArray query, @Nullable final T payload) {
+    public <T> void updateMetadata(@Nonnull final String key, @Nonnull final SingyeongType type, @Nonnull final T data) {
+        final var msg = new SingyeongMessage(SingyeongOp.DISPATCH, "UPDATE_METADATA",
+                System.currentTimeMillis(),
+                new JsonObject().put(key, data)
+        );
+        socket.send(msg);
+    }
+    
+    private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nonnull final String appId,
+                                                @Nonnull final JsonArray query, @Nullable final T payload) {
         return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(),
                 new JsonObject()
                         .put("sender", id.toString())

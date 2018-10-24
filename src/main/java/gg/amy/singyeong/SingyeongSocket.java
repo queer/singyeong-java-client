@@ -134,10 +134,9 @@ public final class SingyeongSocket {
     }
     
     private SingyeongMessage heartbeat() {
-        return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(),
+        return new SingyeongMessage(SingyeongOp.HEARTBEAT, null, System.currentTimeMillis(),
                 new JsonObject()
                         .put("client_id", singyeong.id().toString())
-                        .put("application_id", singyeong.appId())
         );
     }
 }

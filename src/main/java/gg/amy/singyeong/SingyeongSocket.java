@@ -38,8 +38,8 @@ public final class SingyeongSocket {
         client = singyeong.vertx().createHttpClient();
         client.websocketAbs(singyeong.serverUrl(), null, null, null,
                 socket -> {
-                    future.complete(null);
                     handleSocketConnect(socket);
+                    future.complete(null);
                 },
                 future::fail);
         
@@ -49,6 +49,7 @@ public final class SingyeongSocket {
     private void handleSocketConnect(@Nonnull final WebSocket socket) {
         socket.frameHandler(this::handleFrame);
         socket.closeHandler(this::handleClose);
+        socketRef.set(socket);
         logger.info("Connected to Singyeong!");
     }
     

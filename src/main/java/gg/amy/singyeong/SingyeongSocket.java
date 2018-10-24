@@ -36,14 +36,18 @@ public final class SingyeongSocket {
         final Future<Void> future = Future.future();
         
         client = singyeong.vertx().createHttpClient();
+        doConnect(future);
+        
+        return VertxCompletableFuture.from(singyeong.vertx(), future);
+    }
+    
+    private void doConnect(final Future<Void> future) {
         client.websocketAbs(singyeong.serverUrl(), null, null, null,
                 socket -> {
                     handleSocketConnect(socket);
                     future.complete(null);
                 },
                 future::fail);
-        
-        return VertxCompletableFuture.from(singyeong.vertx(), future);
     }
     
     private void handleSocketConnect(@Nonnull final WebSocket socket) {
@@ -56,6 +60,7 @@ public final class SingyeongSocket {
     @SuppressWarnings("unused")
     private void handleClose(final Void __) {
         logger.warn("Disconnected from Singyeong!");
+        doConnect(Future.future());
     }
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {

@@ -43,6 +43,9 @@ public class SingyeongClient {
         this.serverUrl = serverUrl;
         this.vertx = vertx;
         this.appId = appId;
+        
+        codec(Dispatch.class);
+        codec(Invalid.class);
     }
     
     @Nonnull
@@ -118,5 +121,9 @@ public class SingyeongClient {
                         )
                         .put("payload", JsonObject.mapFrom(payload))
         );
+    }
+    
+    private <T> void codec(@Nonnull final Class<T> cls) {
+        vertx.eventBus().registerDefaultCodec(cls, new JsonPojoCodec<>(cls));
     }
 }

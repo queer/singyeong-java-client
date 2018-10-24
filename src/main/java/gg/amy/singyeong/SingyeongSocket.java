@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author amy
  * @since 10/23/18.
  */
+@SuppressWarnings("WeakerAccess")
 @RequiredArgsConstructor
 @Accessors(fluent = true)
 public final class SingyeongSocket {
@@ -42,6 +43,7 @@ public final class SingyeongSocket {
     }
     
     private void doConnect(final Future<Void> future) {
+        logger.info("Starting Singyeong connect...");
         client.websocketAbs(singyeong.serverUrl(), null, null, null,
                 socket -> {
                     handleSocketConnect(socket);
@@ -108,6 +110,7 @@ public final class SingyeongSocket {
     void send(@Nonnull final SingyeongMessage msg) {
         if(socketRef.get() != null) {
             socketRef.get().writeTextMessage(msg.toJson().encode());
+            logger.debug("Sending Singyeong payload:\n{}", msg.toJson().encodePrettily());
         }
     }
     

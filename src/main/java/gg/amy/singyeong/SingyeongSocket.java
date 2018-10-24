@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -27,6 +29,7 @@ public final class SingyeongSocket {
     @Getter(AccessLevel.PACKAGE)
     private HttpClient client;
     private final AtomicReference<WebSocket> socketRef = new AtomicReference<>(null);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     
     @Nonnull
     CompletableFuture<Void> connect() {
@@ -45,6 +48,13 @@ public final class SingyeongSocket {
     
     private void handleSocketConnect(@Nonnull final WebSocket socket) {
         socket.frameHandler(this::handleFrame);
+        socket.closeHandler(this::handleClose);
+        logger.info("Connected to Singyeong!");
+    }
+    
+    @SuppressWarnings("unused")
+    private void handleClose(final Void __) {
+        logger.warn("Disconnected from Singyeong!");
     }
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {
@@ -54,13 +64,14 @@ public final class SingyeongSocket {
             switch(msg.op()) {
                 case HELLO: {
                     final Integer heartbeatInterval = msg.data().getInteger("heartbeat_interval");
-                    startHeartbeat(heartbeatInterval);
                     // IDENTIFY to allow doing everything
                     send(identify());
+                    startHeartbeat(heartbeatInterval);
                     break;
                 }
                 case READY: {
                     // Welcome to singyeong!
+                    logger.info("Welcome to singyeong!");
                     break;
                 }
                 case INVALID: {
@@ -78,6 +89,10 @@ public final class SingyeongSocket {
                 }
                 case HEARTBEAT_ACK: {
                     // Avoid disconnection for another day~
+                    break;
+                }
+                default: {
+                    logger.warn("Got unknown singyeong opcode " + msg.op());
                     break;
                 }
             }

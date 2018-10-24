@@ -27,10 +27,11 @@ import java.util.concurrent.atomic.AtomicReference;
 @Accessors(fluent = true)
 public final class SingyeongSocket {
     private final SingyeongClient singyeong;
-    @Getter(AccessLevel.PACKAGE)
-    private HttpClient client;
     private final AtomicReference<WebSocket> socketRef = new AtomicReference<>(null);
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    @Getter(AccessLevel.PACKAGE)
+    private HttpClient client;
+    private long heartbeatTimer = -1L;
     
     @Nonnull
     CompletableFuture<Void> connect() {
@@ -62,6 +63,9 @@ public final class SingyeongSocket {
     @SuppressWarnings("unused")
     private void handleClose(final Void __) {
         logger.warn("Disconnected from Singyeong!");
+        if(heartbeatTimer != -1) {
+            singyeong.vertx().cancelTimer(heartbeatTimer);
+        }
         doConnect(Future.future());
     }
     
@@ -116,7 +120,7 @@ public final class SingyeongSocket {
     
     private void startHeartbeat(@Nonnegative final int heartbeatInterval) {
         // Delay a second before starting just to be safe wrt IDENTIFY
-        singyeong.vertx().setTimer(1_000L, __ ->
+        heartbeatTimer = singyeong.vertx().setTimer(1_000L, __ ->
                 singyeong.vertx().setPeriodic(heartbeatInterval, ___ ->
                         send(heartbeat())));
     }

@@ -113,7 +113,7 @@ public class SingyeongClient {
     public <T> void updateMetadata(@Nonnull final String key, @Nonnull final SingyeongType type, @Nonnull final T data) {
         final var msg = new SingyeongMessage(SingyeongOp.DISPATCH, "UPDATE_METADATA",
                 System.currentTimeMillis(),
-                new JsonObject().put(key, data)
+                new JsonObject().put(key, new JsonObject().put("type", type.name().toLowerCase()).put("value", data))
         );
         socket.send(msg);
     }

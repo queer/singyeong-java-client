@@ -1,5 +1,6 @@
 package gg.amy.singyeong;
 
+import com.google.common.collect.ImmutableList;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -80,6 +81,6 @@ public final class QueryBuilder {
     }
     
     public JsonArray build() {
-        return new JsonArray(ops);
+        return new JsonArray(ImmutableList.copyOf(ops));
     }
 }

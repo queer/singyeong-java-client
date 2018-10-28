@@ -89,7 +89,10 @@ public final class SingyeongSocket {
                 case INVALID: {
                     final String error = msg.data().getString("error");
                     singyeong.vertx().eventBus().publish(SingyeongClient.SINGYEONG_INVALID_EVENT_CHANNEL,
-                            new Invalid(error));
+                            new Invalid(error, msg.data()
+                                    // lol
+                                    .getJsonObject("d", new JsonObject().put("nonce", (String) null))
+                                    .getString("nonce")));
                     break;
                 }
                 case DISPATCH: {

@@ -11,4 +11,5 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 public class Invalid {
     private String reason;
+    private String nonce;
 }

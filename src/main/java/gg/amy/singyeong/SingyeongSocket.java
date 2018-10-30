@@ -123,9 +123,11 @@ public final class SingyeongSocket {
     
     private void startHeartbeat(@Nonnegative final int heartbeatInterval) {
         // Delay a second before starting just to be safe wrt IDENTIFY
-        heartbeatTimer = singyeong.vertx().setTimer(1_000L, __ ->
-                singyeong.vertx().setPeriodic(heartbeatInterval, ___ ->
-                        send(heartbeat())));
+        heartbeatTimer = singyeong.vertx().setTimer(1_000L, __ -> {
+            send(heartbeat());
+            singyeong.vertx().setPeriodic(heartbeatInterval, ___ ->
+                    send(heartbeat()));
+        });
     }
     
     private SingyeongMessage identify() {

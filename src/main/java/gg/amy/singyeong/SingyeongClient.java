@@ -91,7 +91,23 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void send(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createDispatch("SEND", appId, query, payload);
+        final var msg = createDispatch("SEND", appId, null, query, payload);
+        socket.send(msg);
+    }
+    
+    /**
+     * Send a message to a single target node matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param appId   The application id to target.
+     * @param nonce   The nonce, used for awaiting responses.
+     * @param query   The routing query. See {@link QueryBuilder}.
+     * @param payload The payload to send. Will be converted to JSON.
+     * @param <T>     Type of the payload.
+     */
+    public <T> void send(@Nonnull final String appId, final String nonce, @Nonnull final JsonArray query, @Nullable final T payload) {
+        final var msg = createDispatch("SEND", appId, nonce, query, payload);
         socket.send(msg);
     }
     
@@ -106,7 +122,23 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void broadcast(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createDispatch("BROADCAST", appId, query, payload);
+        final var msg = createDispatch("BROADCAST", appId, null, query, payload);
+        socket.send(msg);
+    }
+    
+    /**
+     * Send a message to a all target nodes matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param appId   The application id to target.
+     * @param nonce   THe nonce, used for awaiting responses.
+     * @param query   The routing query. See {@link QueryBuilder}.
+     * @param payload The payload to send. Will be converted to JSON.
+     * @param <T>     Type of the payload.
+     */
+    public <T> void broadcast(@Nonnull final String appId, @Nonnull final String nonce, @Nonnull final JsonArray query, @Nullable final T payload) {
+        final var msg = createDispatch("BROADCAST", appId, nonce, query, payload);
         socket.send(msg);
     }
     
@@ -119,7 +151,8 @@ public class SingyeongClient {
     }
     
     private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nonnull final String appId,
-                                                @Nonnull final JsonArray query, @Nullable final T payload) {
+                                                @Nullable final String nonce, @Nonnull final JsonArray query,
+                                                @Nullable final T payload) {
         return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(),
                 new JsonObject()
                         .put("sender", id.toString())
@@ -127,6 +160,7 @@ public class SingyeongClient {
                                 .put("application", appId)
                                 .put("ops", query)
                         )
+                        .put("nonce", nonce)
                         .put("payload", JsonObject.mapFrom(payload))
         );
     }

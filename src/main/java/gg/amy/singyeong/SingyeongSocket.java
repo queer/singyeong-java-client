@@ -2,6 +2,7 @@ package gg.amy.singyeong;
 
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.WebSocketFrame;
 import io.vertx.core.json.JsonObject;
@@ -37,7 +38,9 @@ public final class SingyeongSocket {
     CompletableFuture<Void> connect() {
         final Future<Void> future = Future.future();
         
-        client = singyeong.vertx().createHttpClient();
+        client = singyeong.vertx().createHttpClient(new HttpClientOptions()
+                .setMaxWebsocketFrameSize(Integer.MAX_VALUE)
+                .setMaxWebsocketMessageSize(Integer.MAX_VALUE));
         doConnect(future);
         
         return VertxCompletableFuture.from(singyeong.vertx(), future);

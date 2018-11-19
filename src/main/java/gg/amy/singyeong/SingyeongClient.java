@@ -19,9 +19,12 @@ import java.util.function.Consumer;
  * @author amy
  * @since 10/23/18.
  */
+@SuppressWarnings("unused")
 @Accessors(fluent = true)
 public class SingyeongClient {
+    @SuppressWarnings("WeakerAccess")
     public static final String SINGYEONG_DISPATCH_EVENT_CHANNEL = "singyeong:event:dispatch";
+    @SuppressWarnings("WeakerAccess")
     public static final String SINGYEONG_INVALID_EVENT_CHANNEL = "singyeong:event:invalid";
     @Getter
     private final Vertx vertx;
@@ -76,6 +79,7 @@ public class SingyeongClient {
      *
      * @return The consumer, in case you want to unregister it.
      */
+    @SuppressWarnings("WeakerAccess")
     public MessageConsumer<Invalid> onInvalid(@Nonnull final Consumer<Invalid> consumer) {
         return vertx.eventBus().consumer(SINGYEONG_INVALID_EVENT_CHANNEL, m -> consumer.accept(m.body()));
     }
@@ -91,8 +95,7 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void send(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createDispatch("SEND", appId, null, query, payload);
-        socket.send(msg);
+        send(appId, null, query, payload);
     }
     
     /**
@@ -106,8 +109,28 @@ public class SingyeongClient {
      * @param payload The payload to send. Will be converted to JSON.
      * @param <T>     Type of the payload.
      */
-    public <T> void send(@Nonnull final String appId, final String nonce, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createDispatch("SEND", appId, nonce, query, payload);
+    @SuppressWarnings("WeakerAccess")
+    public <T> void send(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
+                         @Nullable final T payload) {
+        send(appId, nonce, query, payload, false);
+    }
+    
+    /**
+     * Send a message to a single target node matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param appId    The application id to target.
+     * @param nonce    The nonce, used for awaiting responses.
+     * @param query    The routing query. See {@link QueryBuilder}.
+     * @param payload  The payload to send. Will be converted to JSON.
+     * @param optional Whether or not the routing query is optional.
+     * @param <T>      Type of the payload.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public <T> void send(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
+                         @Nullable final T payload, final boolean optional) {
+        final var msg = createDispatch("SEND", appId, nonce, query, optional, payload);
         socket.send(msg);
     }
     
@@ -122,8 +145,7 @@ public class SingyeongClient {
      * @param <T>     Type of the payload.
      */
     public <T> void broadcast(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createDispatch("BROADCAST", appId, null, query, payload);
-        socket.send(msg);
+        broadcast(appId, null, query, payload);
     }
     
     /**
@@ -137,11 +159,39 @@ public class SingyeongClient {
      * @param payload The payload to send. Will be converted to JSON.
      * @param <T>     Type of the payload.
      */
-    public <T> void broadcast(@Nonnull final String appId, @Nonnull final String nonce, @Nonnull final JsonArray query, @Nullable final T payload) {
-        final var msg = createDispatch("BROADCAST", appId, nonce, query, payload);
+    @SuppressWarnings("WeakerAccess")
+    public <T> void broadcast(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
+                              @Nullable final T payload) {
+        broadcast(appId, nonce, query, payload, false);
+    }
+    
+    /**
+     * Send a message to a all target nodes matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param appId    The application id to target.
+     * @param nonce    THe nonce, used for awaiting responses.
+     * @param query    The routing query. See {@link QueryBuilder}.
+     * @param payload  The payload to send. Will be converted to JSON.
+     * @param optional Whether or not the routing query is optional.
+     * @param <T>      Type of the payload.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public <T> void broadcast(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
+                              @Nullable final T payload, final boolean optional) {
+        final var msg = createDispatch("BROADCAST", appId, nonce, query, optional, payload);
         socket.send(msg);
     }
     
+    /**
+     * Update this client's metadata on the server.
+     *
+     * @param key  The metadata key to set.
+     * @param type The type of the metadata. Will be validated by the server.
+     * @param data The value to set for the metadata key.
+     * @param <T>  The Java type of the metadata.
+     */
     public <T> void updateMetadata(@Nonnull final String key, @Nonnull final SingyeongType type, @Nonnull final T data) {
         final var msg = new SingyeongMessage(SingyeongOp.DISPATCH, "UPDATE_METADATA",
                 System.currentTimeMillis(),
@@ -152,11 +202,12 @@ public class SingyeongClient {
     
     private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nonnull final String appId,
                                                 @Nullable final String nonce, @Nonnull final JsonArray query,
-                                                @Nullable final T payload) {
+                                                final boolean optional, @Nullable final T payload) {
         return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(),
                 new JsonObject()
                         .put("sender", id.toString())
                         .put("target", new JsonObject()
+                                .put("optional", optional)
                                 .put("application", appId)
                                 .put("ops", query)
                         )

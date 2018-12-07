@@ -1,6 +1,5 @@
 package gg.amy.singyeong;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -19,7 +18,6 @@ import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 /**
  * @author amy
@@ -80,6 +78,7 @@ public final class SingyeongSocket {
                 });
             }
         });
+        singyeong.refreshId();
         doConnect(future);
     }
     

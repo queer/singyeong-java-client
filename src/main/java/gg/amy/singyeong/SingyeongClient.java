@@ -33,7 +33,7 @@ public class SingyeongClient {
     @Getter
     private final String appId;
     @Getter
-    private final UUID id = UUID.randomUUID();
+    private UUID id = UUID.randomUUID();
     @Getter
     private SingyeongSocket socket;
     
@@ -218,5 +218,9 @@ public class SingyeongClient {
     
     private <T> void codec(@Nonnull final Class<T> cls) {
         vertx.eventBus().registerDefaultCodec(cls, new JsonPojoCodec<>(cls));
+    }
+    
+    void refreshId() {
+        id = UUID.randomUUID();
     }
 }

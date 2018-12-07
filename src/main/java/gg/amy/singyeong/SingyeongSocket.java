@@ -1,5 +1,6 @@
 package gg.amy.singyeong;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -18,6 +19,7 @@ import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * @author amy
@@ -69,7 +71,13 @@ public final class SingyeongSocket {
         if(heartbeatTimer != -1) {
             singyeong.vertx().cancelTimer(heartbeatTimer);
         }
-        doConnect(Future.future());
+        final Future<Void> future = Future.future();
+        future.setHandler(res -> {
+            if(res.failed()) {
+                handleClose(null);
+            }
+        });
+        doConnect(future);
     }
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {

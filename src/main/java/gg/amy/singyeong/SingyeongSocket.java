@@ -46,19 +46,19 @@ public final class SingyeongSocket {
                 handleClose(null);
             }
         });
-        doConnect(future);
+        connectLoop(future);
         
         return VertxCompletableFuture.from(singyeong.vertx(), future);
     }
     
-    private void doConnect(final Future<Void> future) {
+    private void connectLoop(final Future<Void> future) {
         logger.info("Starting Singyeong connect...");
         client.websocketAbs(singyeong.serverUrl(), null, null, null,
                 socket -> {
                     handleSocketConnect(socket);
                     future.complete(null);
                 },
-                future::fail);
+                _e -> singyeong.vertx().setTimer(1000L, __ -> connectLoop(future)));
     }
     
     private void handleSocketConnect(@Nonnull final WebSocket socket) {
@@ -75,16 +75,8 @@ public final class SingyeongSocket {
             singyeong.vertx().cancelTimer(heartbeatTimer);
             heartbeatTimer = -1;
         }
-        final Future<Void> future = Future.future();
-        future.setHandler(res -> {
-            if(res.failed()) {
-                singyeong.vertx().setTimer(1000L, ___ -> {
-                    handleClose(null);
-                });
-            }
-        });
         singyeong.refreshId();
-        doConnect(future);
+        connectLoop(Future.future());
     }
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {

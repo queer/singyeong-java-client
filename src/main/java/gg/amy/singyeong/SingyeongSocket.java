@@ -41,6 +41,11 @@ public final class SingyeongSocket {
         client = singyeong.vertx().createHttpClient(new HttpClientOptions()
                 .setMaxWebsocketFrameSize(Integer.MAX_VALUE)
                 .setMaxWebsocketMessageSize(Integer.MAX_VALUE));
+        future.setHandler(res -> {
+            if(res.failed()) {
+                handleClose(null);
+            }
+        });
         doConnect(future);
         
         return VertxCompletableFuture.from(singyeong.vertx(), future);

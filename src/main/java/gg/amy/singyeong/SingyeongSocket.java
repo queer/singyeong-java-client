@@ -157,7 +157,7 @@ public final class SingyeongSocket {
                 .put("client_id", singyeong.id().toString())
                 .put("application_id", singyeong.appId());
         if(reconnecting) {
-            payload.put("reconnecting", true);
+            payload.put("reconnect", true);
         }
         return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(), payload);
     }

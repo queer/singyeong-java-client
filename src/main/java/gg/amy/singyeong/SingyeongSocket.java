@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -33,6 +34,7 @@ public final class SingyeongSocket {
     @Getter(AccessLevel.PACKAGE)
     private HttpClient client;
     private long heartbeatTimer = -1L;
+    private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     
     @Nonnull
     CompletableFuture<Void> connect() {
@@ -75,7 +77,7 @@ public final class SingyeongSocket {
             singyeong.vertx().cancelTimer(heartbeatTimer);
             heartbeatTimer = -1;
         }
-        singyeong.refreshId();
+        reconnecting.set(true);
         connectLoop(Future.future());
     }
     
@@ -87,7 +89,7 @@ public final class SingyeongSocket {
                 case HELLO: {
                     final Integer heartbeatInterval = msg.data().getInteger("heartbeat_interval");
                     // IDENTIFY to allow doing everything
-                    send(identify());
+                    send(identify(reconnecting.get()));
                     startHeartbeat(heartbeatInterval);
                     break;
                 }
@@ -150,12 +152,14 @@ public final class SingyeongSocket {
         });
     }
     
-    private SingyeongMessage identify() {
-        return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(),
-                new JsonObject()
-                        .put("client_id", singyeong.id().toString())
-                        .put("application_id", singyeong.appId())
-        );
+    private SingyeongMessage identify(final boolean reconnecting) {
+        final JsonObject payload = new JsonObject()
+                .put("client_id", singyeong.id().toString())
+                .put("application_id", singyeong.appId());
+        if(reconnecting) {
+            payload.put("reconnecting", true);
+        }
+        return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(), payload);
     }
     
     private SingyeongMessage heartbeat() {

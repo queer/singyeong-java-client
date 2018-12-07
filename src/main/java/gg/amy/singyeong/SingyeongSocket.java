@@ -70,11 +70,14 @@ public final class SingyeongSocket {
         logger.warn("Disconnected from Singyeong!");
         if(heartbeatTimer != -1) {
             singyeong.vertx().cancelTimer(heartbeatTimer);
+            heartbeatTimer = -1;
         }
         final Future<Void> future = Future.future();
         future.setHandler(res -> {
             if(res.failed()) {
-                handleClose(null);
+                singyeong.vertx().setTimer(1000L, ___ -> {
+                    handleClose(null);
+                });
             }
         });
         doConnect(future);

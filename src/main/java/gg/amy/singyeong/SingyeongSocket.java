@@ -94,6 +94,16 @@ public final class SingyeongSocket {
                 case READY: {
                     // Welcome to singyeong!
                     logger.info("Welcome to singyeong!");
+                    if(!singyeong.metadataCache().isEmpty()) {
+                        logger.info("Refreshing metadata (we probably just reconnected)");
+                        final var data = new JsonObject();
+                        singyeong.metadataCache().forEach(data::put);
+                        final var update = new SingyeongMessage(SingyeongOp.DISPATCH, "UPDATE_METADATA",
+                                System.currentTimeMillis(),
+                                data
+                        );
+                        send(update);
+                    }
                     break;
                 }
                 case INVALID: {

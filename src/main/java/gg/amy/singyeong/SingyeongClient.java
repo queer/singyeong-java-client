@@ -5,14 +5,17 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +35,8 @@ public class SingyeongClient {
     private final String serverUrl;
     @Getter
     private final String appId;
+    @Getter(AccessLevel.PACKAGE)
+    private final Map<String, JsonObject> metadataCache = new ConcurrentHashMap<>();
     @Getter
     private UUID id = UUID.randomUUID();
     @Getter
@@ -193,9 +198,11 @@ public class SingyeongClient {
      * @param <T>  The Java type of the metadata.
      */
     public <T> void updateMetadata(@Nonnull final String key, @Nonnull final SingyeongType type, @Nonnull final T data) {
+        final JsonObject metadataValue = new JsonObject().put("type", type.name().toLowerCase()).put("value", data);
+        metadataCache.put(key, metadataValue);
         final var msg = new SingyeongMessage(SingyeongOp.DISPATCH, "UPDATE_METADATA",
                 System.currentTimeMillis(),
-                new JsonObject().put(key, new JsonObject().put("type", type.name().toLowerCase()).put("value", data))
+                new JsonObject().put(key, metadataValue)
         );
         socket.send(msg);
     }

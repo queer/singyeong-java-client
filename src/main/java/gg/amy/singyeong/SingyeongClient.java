@@ -2,6 +2,8 @@ package gg.amy.singyeong;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -15,6 +17,7 @@ import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,6 +75,9 @@ public final class SingyeongClient {
             final String[] split = userInfo.split(":", 2);
             appId = split[0];
             authentication = split.length != 2 ? null : split[1];
+            
+            vertx.eventBus().registerDefaultCodec(Dispatch.class, new FakeCodec<>());
+            vertx.eventBus().registerDefaultCodec(Invalid.class, new FakeCodec<>());
         } catch(final URISyntaxException e) {
             throw new IllegalArgumentException("Invalid singyeong URI!", e);
         }
@@ -255,5 +261,32 @@ public final class SingyeongClient {
     
     private <T> void codec(@Nonnull final Class<T> cls) {
         vertx.eventBus().registerDefaultCodec(cls, new JsonPojoCodec<>(cls));
+    }
+    
+    private static class FakeCodec<T> implements MessageCodec<T, Object> {
+        @Override
+        public void encodeToWire(final Buffer buffer, final T dispatch) {
+
+        }
+        
+        @Override
+        public Object decodeFromWire(final int pos, final Buffer buffer) {
+            return null;
+        }
+        
+        @Override
+        public Object transform(final T dispatch) {
+            return dispatch;
+        }
+        
+        @Override
+        public String name() {
+            return "noop";
+        }
+        
+        @Override
+        public byte systemCodecID() {
+            return (byte) (new Random().nextInt() & 0xFF);
+        }
     }
 }

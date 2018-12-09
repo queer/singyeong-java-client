@@ -286,7 +286,7 @@ public final class SingyeongClient {
         
         @Override
         public byte systemCodecID() {
-            return (byte) (new Random().nextInt() & 0xFF);
+            return -1;
         }
     }
 }

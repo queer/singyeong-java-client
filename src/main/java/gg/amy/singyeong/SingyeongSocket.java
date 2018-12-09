@@ -60,7 +60,10 @@ public final class SingyeongSocket {
                     handleSocketConnect(socket);
                     future.complete(null);
                 },
-                _e -> singyeong.vertx().setTimer(1000L, __ -> connectLoop(future)));
+                _e -> {
+                    _e.printStackTrace();
+                    singyeong.vertx().setTimer(1000L, __ -> connectLoop(future));
+                });
     }
     
     private void handleSocketConnect(@Nonnull final WebSocket socket) {
@@ -158,6 +161,9 @@ public final class SingyeongSocket {
                 .put("application_id", singyeong.appId());
         if(reconnecting) {
             payload.put("reconnect", true);
+        }
+        if(singyeong.authentication() != null) {
+            payload.put("", singyeong.authentication());
         }
         return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(), payload);
     }

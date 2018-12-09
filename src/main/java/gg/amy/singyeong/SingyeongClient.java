@@ -12,6 +12,8 @@ import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -24,7 +26,7 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("unused")
 @Accessors(fluent = true)
-public class SingyeongClient {
+public final class SingyeongClient {
     @SuppressWarnings("WeakerAccess")
     public static final String SINGYEONG_DISPATCH_EVENT_CHANNEL = "singyeong:event:dispatch";
     @SuppressWarnings("WeakerAccess")
@@ -35,6 +37,8 @@ public class SingyeongClient {
     private final String serverUrl;
     @Getter
     private final String appId;
+    @Getter
+    private final String authentication;
     @Getter(AccessLevel.PACKAGE)
     private final Map<String, JsonObject> metadataCache = new ConcurrentHashMap<>();
     @Getter
@@ -42,18 +46,44 @@ public class SingyeongClient {
     @Getter
     private SingyeongSocket socket;
     
-    public SingyeongClient(@Nonnull final String serverUrl, @Nonnull final String appId) {
-        this(serverUrl, Vertx.vertx(), appId);
+    private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn) {
+        this.vertx = vertx;
+        try {
+            final var uri = new URI(dsn);
+            String server = "";
+            final String scheme = uri.getScheme();
+            if(scheme.equalsIgnoreCase("singyeong")) {
+                server += "ws://";
+            } else if(scheme.equalsIgnoreCase("ssingyeong")) {
+                server += "wss://";
+            } else {
+                throw new IllegalArgumentException(scheme + " is not a valid singyeong URI scheme (expected 'singyeong' or 'ssingyeong')");
+            }
+            server += uri.getHost();
+            if(uri.getPort() > -1) {
+                server += ":" + uri.getPort();
+            }
+            server += "/gateway/websocket";
+            serverUrl = server;
+            final String userInfo = uri.getUserInfo();
+            if(userInfo == null) {
+                throw new IllegalArgumentException("Didn't pass auth to singyeong DSN!");
+            }
+            final String[] split = userInfo.split(":", 2);
+            appId = split[0];
+            authentication = split.length != 2 ? null : split[1];
+        } catch(final URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid singyeong URI!", e);
+        }
+    }
+    
+    public static SingyeongClient create(@Nonnull final String dsn) {
+        return create(Vertx.vertx(), dsn);
     }
     
     @SuppressWarnings("WeakerAccess")
-    public SingyeongClient(@Nonnull final String serverUrl, @Nonnull final Vertx vertx, @Nonnull final String appId) {
-        this.serverUrl = serverUrl;
-        this.vertx = vertx;
-        this.appId = appId;
-        
-        codec(Dispatch.class);
-        codec(Invalid.class);
+    public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn) {
+        return new SingyeongClient(vertx, dsn);
     }
     
     @Nonnull

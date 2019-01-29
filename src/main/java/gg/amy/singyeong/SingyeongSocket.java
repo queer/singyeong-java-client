@@ -5,6 +5,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.WebSocketFrame;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -165,6 +166,9 @@ public final class SingyeongSocket {
         }
         if(singyeong.authentication() != null) {
             payload.put("auth", singyeong.authentication());
+        }
+        if(singyeong.tags() != null && !singyeong.tags().isEmpty()) {
+            payload.put("tags", new JsonArray(singyeong.tags()));
         }
         return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(), payload);
     }

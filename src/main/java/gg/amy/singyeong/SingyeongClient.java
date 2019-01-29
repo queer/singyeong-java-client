@@ -16,9 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -47,9 +45,15 @@ public final class SingyeongClient {
     @Getter
     private final UUID id = UUID.randomUUID();
     @Getter
+    private final List<String> tags;
+    @Getter
     private SingyeongSocket socket;
     
     private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn) {
+        this(vertx, dsn, Collections.emptyList());
+    }
+    
+    private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nonnull final List<String> tags) {
         this.vertx = vertx;
         try {
             final var uri = new URI(dsn);
@@ -66,8 +70,7 @@ public final class SingyeongClient {
             if(uri.getPort() > -1) {
                 server += ":" + uri.getPort();
             }
-            server += "/gateway/websocket";
-            serverUrl = server;
+            serverUrl = server + "/gateway/websocket";
             final String userInfo = uri.getUserInfo();
             if(userInfo == null) {
                 throw new IllegalArgumentException("Didn't pass auth to singyeong DSN!");
@@ -75,6 +78,7 @@ public final class SingyeongClient {
             final String[] split = userInfo.split(":", 2);
             appId = split[0];
             authentication = split.length != 2 ? null : split[1];
+            this.tags = Collections.unmodifiableList(tags);
             
             vertx.eventBus().registerDefaultCodec(Dispatch.class, new FakeCodec<>());
             vertx.eventBus().registerDefaultCodec(Invalid.class, new FakeCodec<>());
@@ -90,6 +94,14 @@ public final class SingyeongClient {
     @SuppressWarnings("WeakerAccess")
     public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn) {
         return new SingyeongClient(vertx, dsn);
+    }
+    
+    public static SingyeongClient create(@Nonnull final String dsn, @Nonnull final List<String> tags) {
+        return new SingyeongClient(Vertx.vertx(), dsn, tags);
+    }
+    
+    public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nonnull final List<String> tags) {
+        return new SingyeongClient(vertx, dsn, tags);
     }
     
     @Nonnull
@@ -266,7 +278,7 @@ public final class SingyeongClient {
     private static class FakeCodec<T> implements MessageCodec<T, Object> {
         @Override
         public void encodeToWire(final Buffer buffer, final T dispatch) {
-
+        
         }
         
         @Override

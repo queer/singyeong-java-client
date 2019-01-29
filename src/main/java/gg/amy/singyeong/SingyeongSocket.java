@@ -164,7 +164,7 @@ public final class SingyeongSocket {
             payload.put("reconnect", true);
         }
         if(singyeong.authentication() != null) {
-            payload.put("", singyeong.authentication());
+            payload.put("auth", singyeong.authentication());
         }
         return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(), payload);
     }

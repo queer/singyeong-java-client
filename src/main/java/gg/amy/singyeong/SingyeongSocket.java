@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -170,7 +172,22 @@ public final class SingyeongSocket {
         if(singyeong.tags() != null && !singyeong.tags().isEmpty()) {
             payload.put("tags", new JsonArray(singyeong.tags()));
         }
+        payload.put("ip", ip());
         return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(), payload);
+    }
+    
+    @Nonnull
+    private String ip() {
+        // Attempt to support kube users who put it as an env var
+        final String podIpEnv = System.getenv("POD_IP");
+        if(podIpEnv != null) {
+            return podIpEnv;
+        }
+        try {
+            return Inet4Address.getLocalHost().getHostAddress();
+        } catch(final UnknownHostException e) {
+            throw new IllegalStateException("DNS broken? Can't resolve localhost!", e);
+        }
     }
     
     private SingyeongMessage heartbeat() {

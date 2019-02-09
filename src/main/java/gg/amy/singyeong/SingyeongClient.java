@@ -40,6 +40,8 @@ public final class SingyeongClient {
     private final String appId;
     @Getter
     private final String authentication;
+    @Getter
+    private final String ip;
     @Getter(AccessLevel.PACKAGE)
     private final Map<String, JsonObject> metadataCache = new ConcurrentHashMap<>();
     @Getter
@@ -54,7 +56,17 @@ public final class SingyeongClient {
     }
     
     private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nonnull final List<String> tags) {
+        this(vertx, dsn, null, tags);
+    }
+    
+    private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip) {
+        this(vertx, dsn, Collections.emptyList());
+    }
+    
+    private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip,
+                            @Nonnull final List<String> tags) {
         this.vertx = vertx;
+        this.ip = ip;
         try {
             final var uri = new URI(dsn);
             String server = "";
@@ -100,8 +112,18 @@ public final class SingyeongClient {
         return new SingyeongClient(Vertx.vertx(), dsn, tags);
     }
     
-    public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nonnull final List<String> tags) {
+    public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn,
+                                         @Nonnull final List<String> tags) {
         return new SingyeongClient(vertx, dsn, tags);
+    }
+    
+    public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip) {
+        return new SingyeongClient(vertx, dsn, ip);
+    }
+    
+    public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip,
+                                         @Nonnull final List<String> tags) {
+        return new SingyeongClient(vertx, dsn, ip, tags);
     }
     
     @Nonnull

@@ -178,6 +178,9 @@ public final class SingyeongSocket {
     
     @Nonnull
     private String ip() {
+        if(singyeong.ip() != null && !singyeong.ip().isEmpty()) {
+            return singyeong.ip();
+        }
         // Attempt to support kube users who put it as an env var
         final String podIpEnv = System.getenv("POD_IP");
         if(podIpEnv != null) {

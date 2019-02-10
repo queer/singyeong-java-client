@@ -60,7 +60,7 @@ public final class SingyeongClient {
     }
     
     private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip) {
-        this(vertx, dsn, Collections.emptyList());
+        this(vertx, dsn, ip, Collections.emptyList());
     }
     
     private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip,

@@ -11,7 +11,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +33,9 @@ public final class SingyeongSocket {
     private final SingyeongClient singyeong;
     private final AtomicReference<WebSocket> socketRef = new AtomicReference<>(null);
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     @Getter(AccessLevel.PACKAGE)
     private HttpClient client;
-    private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     
     @Nonnull
     CompletableFuture<Void> connect() {
@@ -52,7 +51,7 @@ public final class SingyeongSocket {
         });
         connectLoop(future);
         
-        return VertxCompletableFuture.from(singyeong.vertx(), future);
+        return SafeVertxCompletableFuture.from(singyeong.vertx(), future);
     }
     
     private void connectLoop(final Future<Void> future) {

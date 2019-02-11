@@ -10,7 +10,6 @@ import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -137,7 +136,7 @@ public final class SingyeongClient {
                     return null;
                 });
         
-        return VertxCompletableFuture.from(vertx, future);
+        return SafeVertxCompletableFuture.from(vertx, future);
     }
     
     /**

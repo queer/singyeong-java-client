@@ -47,13 +47,6 @@
             <version>${vertx.version}</version>
         </dependency>
 
-        <!-- Vert.x CompletableFutures -->
-        <dependency>
-            <groupId>com.github.cescoffier</groupId>
-            <artifactId>vertx-completable-future</artifactId>
-            <version>${vertx-completable-future.version}</version>
-        </dependency>
-
         <!-- slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>

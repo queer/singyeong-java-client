@@ -81,7 +81,7 @@ public final class SingyeongClient {
         try {
             final var uri = new URI(dsn);
             String server = "";
-            final String scheme = uri.getScheme();
+            final var scheme = uri.getScheme();
             if(scheme.equalsIgnoreCase("singyeong")) {
                 server += "ws://";
             } else if(scheme.equalsIgnoreCase("ssingyeong")) {
@@ -99,7 +99,7 @@ public final class SingyeongClient {
             if(userInfo == null) {
                 throw new IllegalArgumentException("Didn't pass auth to singyeong DSN!");
             }
-            final String[] split = userInfo.split(":", 2);
+            final var split = userInfo.split(":", 2);
             appId = split[0];
             authentication = split.length != 2 ? null : split[1];
             this.tags = Collections.unmodifiableList(tags);
@@ -140,7 +140,7 @@ public final class SingyeongClient {
     
     @Nonnull
     public CompletableFuture<Void> connect() {
-        final Future<Void> future = Future.future();
+        final var future = Future.<Void>future();
         socket = new SingyeongSocket(this);
         socket.connect()
                 .thenAccept(__ -> future.complete(null))
@@ -299,13 +299,13 @@ public final class SingyeongClient {
     private CompletableFuture<String> proxy0(final HttpMethod method, final String route, final Object target,
                                              final JsonArray query, final Multimap<String, String> headers,
                                              final Object body) {
-        final Future<String> future = Future.future();
+        final var future = Future.<String>future();
         
-        final JsonObject headersObj = new JsonObject();
+        final var headersObj = new JsonObject();
         // TODO: Yikes
         headers.asMap().forEach((k, v) -> headersObj.put(k, new JsonArray(new ArrayList<>(v))));
         
-        final JsonObject payload = new JsonObject()
+        final var payload = new JsonObject()
                 .put("method", method.name().toUpperCase())
                 .put("route", route)
                 .put("headers", headersObj)
@@ -319,7 +319,7 @@ public final class SingyeongClient {
         
         client.postAbs(serverUrl + "/api/v1/proxy").sendJson(payload, ar -> {
             if(ar.succeeded()) {
-                final HttpResponse<Buffer> result = ar.result();
+                final var result = ar.result();
                 future.complete(result.bodyAsString());
             } else {
                 future.fail(ar.cause());
@@ -573,7 +573,7 @@ public final class SingyeongClient {
      * @param <T>  The Java type of the metadata.
      */
     public <T> void updateMetadata(@Nonnull final String key, @Nonnull final SingyeongType type, @Nonnull final T data) {
-        final JsonObject metadataValue = new JsonObject().put("type", type.name().toLowerCase()).put("value", data);
+        final var metadataValue = new JsonObject().put("type", type.name().toLowerCase()).put("value", data);
         metadataCache.put(key, metadataValue);
         final var msg = new SingyeongMessage(SingyeongOp.DISPATCH, "UPDATE_METADATA",
                 System.currentTimeMillis(),

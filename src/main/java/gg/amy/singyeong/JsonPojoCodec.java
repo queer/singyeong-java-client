@@ -23,11 +23,10 @@ public class JsonPojoCodec<T> implements MessageCodec<T, T> {
     
     @Override
     public T decodeFromWire(final int pos, final Buffer buffer) {
-        final Buffer out = Buffer.buffer();
+        final var out = Buffer.buffer();
         buffer.readFromBuffer(pos, out);
-        final JsonObject data = new JsonObject(out.getString(0, out.length()));
-        final T object = data.mapTo(type);
-        return object;
+        final var data = new JsonObject(out.getString(0, out.length()));
+        return data.mapTo(type);
     }
     
     @Override

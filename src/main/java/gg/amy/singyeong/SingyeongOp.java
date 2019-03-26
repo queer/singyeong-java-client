@@ -27,7 +27,7 @@ public enum SingyeongOp {
     }
     
     public static SingyeongOp fromOp(@Nonnegative final int op) {
-        for(final SingyeongOp value : values()) {
+        for(final var value : values()) {
             if(value.code == op) {
                 return value;
             }

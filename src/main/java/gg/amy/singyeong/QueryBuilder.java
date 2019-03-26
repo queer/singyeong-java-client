@@ -7,14 +7,16 @@ import io.vertx.core.json.JsonObject;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * @author amy
  * @since 10/23/18.
  */
+@SuppressWarnings("unused")
 public final class QueryBuilder {
-    private final List<JsonObject> ops = new ArrayList<>();
+    private final Collection<JsonObject> ops = new ArrayList<>();
     
     public <T> QueryBuilder eq(@Nonnull final String key, @Nullable final T value) {
         ops.add(new JsonObject().put(key, new JsonObject().put("$eq", value)));

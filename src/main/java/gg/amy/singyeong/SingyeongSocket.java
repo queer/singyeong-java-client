@@ -40,7 +40,7 @@ public final class SingyeongSocket {
     
     @Nonnull
     CompletableFuture<Void> connect() {
-        final Future<Void> future = Future.future();
+        final var future = Future.<Void>future();
         
         client = singyeong.vertx().createHttpClient(new HttpClientOptions()
                 .setMaxWebsocketFrameSize(Integer.MAX_VALUE)
@@ -85,11 +85,11 @@ public final class SingyeongSocket {
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {
         if(frame.isText()) {
-            final JsonObject payload = new JsonObject(frame.textData());
-            final SingyeongMessage msg = SingyeongMessage.fromJson(payload);
+            final var payload = new JsonObject(frame.textData());
+            final var msg = SingyeongMessage.fromJson(payload);
             switch(msg.op()) {
                 case HELLO: {
-                    final Integer heartbeatInterval = msg.data().getInteger("heartbeat_interval");
+                    final var heartbeatInterval = msg.data().getInteger("heartbeat_interval");
                     // IDENTIFY to allow doing everything
                     send(identify(reconnecting.get()));
                     startHeartbeat(heartbeatInterval);
@@ -111,7 +111,7 @@ public final class SingyeongSocket {
                     break;
                 }
                 case INVALID: {
-                    final String error = msg.data().getString("error");
+                    final var error = msg.data().getString("error");
                     singyeong.vertx().eventBus().publish(SingyeongClient.SINGYEONG_INVALID_EVENT_CHANNEL,
                             new Invalid(error, msg.data()
                                     // lol
@@ -120,7 +120,7 @@ public final class SingyeongSocket {
                     break;
                 }
                 case DISPATCH: {
-                    final JsonObject d = msg.data();
+                    final var d = msg.data();
                     singyeong.vertx().eventBus().publish(SingyeongClient.SINGYEONG_DISPATCH_EVENT_CHANNEL,
                             new Dispatch(msg.timestamp(), d.getString("sender"), d.getString("nonce"),
                                     d.getJsonObject("payload")));
@@ -160,7 +160,7 @@ public final class SingyeongSocket {
     }
     
     private SingyeongMessage identify(final boolean reconnecting) {
-        final JsonObject payload = new JsonObject()
+        final var payload = new JsonObject()
                 .put("client_id", singyeong.id().toString())
                 .put("application_id", singyeong.appId());
         if(reconnecting) {
@@ -182,7 +182,7 @@ public final class SingyeongSocket {
             return singyeong.ip();
         }
         // Attempt to support kube users who put it as an env var
-        final String podIpEnv = System.getenv("POD_IP");
+        final var podIpEnv = System.getenv("POD_IP");
         if(podIpEnv != null) {
             return podIpEnv;
         }

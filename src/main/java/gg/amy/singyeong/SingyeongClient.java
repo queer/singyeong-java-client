@@ -1,13 +1,18 @@
 package gg.amy.singyeong;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import gg.amy.vertx.SafeVertxCompletableFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -35,7 +40,11 @@ public final class SingyeongClient {
     @Getter
     private final Vertx vertx;
     @Getter
+    private final WebClient client;
+    @Getter
     private final String serverUrl;
+    @Getter
+    private final String gatewayUrl;
     @Getter
     private final String appId;
     @Getter
@@ -66,6 +75,8 @@ public final class SingyeongClient {
     private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip,
                             @Nonnull final List<String> tags) {
         this.vertx = vertx;
+        // TODO: Allow configuring?
+        client = WebClient.create(vertx);
         this.ip = ip;
         try {
             final var uri = new URI(dsn);
@@ -82,7 +93,8 @@ public final class SingyeongClient {
             if(uri.getPort() > -1) {
                 server += ":" + uri.getPort();
             }
-            serverUrl = server + "/gateway/websocket";
+            serverUrl = server.replaceFirst("ws", "http");
+            gatewayUrl = server + "/gateway/websocket";
             final String userInfo = uri.getUserInfo();
             if(userInfo == null) {
                 throw new IllegalArgumentException("Didn't pass auth to singyeong DSN!");
@@ -136,6 +148,183 @@ public final class SingyeongClient {
                     future.fail(throwable);
                     return null;
                 });
+        
+        return SafeVertxCompletableFuture.from(vertx, future);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method HTTP method to use for the proxied request.
+     * @param route  Route on the target to proxy the request to.
+     * @param target Service that should be targeted by the request.
+     * @param query  Query used to decide how to route the request.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final String target, @Nonnull final JsonArray query) {
+        return proxy(method, route, target, query, ArrayListMultimap.create(), null);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method HTTP method to use for the proxied request.
+     * @param route  Route on the target to proxy the request to.
+     * @param target Service that should be targeted by the request.
+     * @param query  Query used to decide how to route the request.
+     * @param body   HTTP request body to send.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final String target, @Nonnull final JsonArray query,
+                                           @Nullable final Object body) {
+        return proxy(method, route, target, query, ArrayListMultimap.create(), body);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method  HTTP method to use for the proxied request.
+     * @param route   Route on the target to proxy the request to.
+     * @param target  Service that should be targeted by the request.
+     * @param query   Query used to decide how to route the request.
+     * @param headers Headers to send on the request.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final String target, @Nonnull final JsonArray query,
+                                           @Nonnull final Multimap<String, String> headers) {
+        return proxy(method, route, target, query, headers, null);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method  HTTP method to use for the proxied request.
+     * @param route   Route on the target to proxy the request to.
+     * @param target  Service that should be targeted by the request.
+     * @param query   Query used to decide how to route the request.
+     * @param headers Headers to send on the request.
+     * @param body    HTTP request body to send.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final String target, @Nonnull final JsonArray query,
+                                           @Nonnull final Multimap<String, String> headers, @Nullable final Object body) {
+        return proxy0(method, route, target, query, headers, body);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method HTTP method to use for the proxied request.
+     * @param route  Route on the target to proxy the request to.
+     * @param target Service that should be targeted by the request.
+     * @param query  Query used to decide how to route the request.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final List<String> target, @Nonnull final JsonArray query) {
+        return proxy(method, route, target, query, ArrayListMultimap.create(), null);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method HTTP method to use for the proxied request.
+     * @param route  Route on the target to proxy the request to.
+     * @param target Service that should be targeted by the request.
+     * @param query  Query used to decide how to route the request.
+     * @param body   HTTP request body to send.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final List<String> target, @Nonnull final JsonArray query,
+                                           @Nullable final Object body) {
+        return proxy(method, route, target, query, ArrayListMultimap.create(), body);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method  HTTP method to use for the proxied request.
+     * @param route   Route on the target to proxy the request to.
+     * @param target  Service that should be targeted by the request.
+     * @param query   Query used to decide how to route the request.
+     * @param headers Headers to send on the request.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final List<String> target, @Nonnull final JsonArray query,
+                                           @Nonnull final Multimap<String, String> headers) {
+        return proxy(method, route, target, query, headers, null);
+    }
+    
+    /**
+     * Proxies an HTTP request to the target returned by the routing query.
+     *
+     * @param method  HTTP method to use for the proxied request.
+     * @param route   Route on the target to proxy the request to.
+     * @param target  Service that should be targeted by the request.
+     * @param query   Query used to decide how to route the request.
+     * @param headers Headers to send on the request.
+     * @param body    HTTP request body to send.
+     *
+     * @return A future that completes with the response body when the request
+     * is complete.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+                                           @Nonnull final List<String> target, @Nonnull final JsonArray query,
+                                           @Nonnull final Multimap<String, String> headers, @Nullable final Object body) {
+        return proxy0(method, route, new JsonArray(target), query, headers, body);
+    }
+    
+    private CompletableFuture<String> proxy0(final HttpMethod method, final String route, final Object target,
+                                             final JsonArray query, final Multimap<String, String> headers,
+                                             final Object body) {
+        final Future<String> future = Future.future();
+        
+        final JsonObject headersObj = new JsonObject();
+        // TODO: Yikes
+        headers.asMap().forEach((k, v) -> headersObj.put(k, new JsonArray(new ArrayList<>(v))));
+        
+        final JsonObject payload = new JsonObject()
+                .put("method", method.name().toUpperCase())
+                .put("route", route)
+                .put("headers", headersObj)
+                .put("body", body)
+                .put("target", new JsonObject()
+                        // TODO: Allow changing this
+                        .put("optional", false)
+                        .put("application", target)
+                        .put("ops", query)
+                );
+        
+        client.postAbs(serverUrl + "/api/v1/proxy").sendJson(payload, ar -> {
+            if(ar.succeeded()) {
+                final HttpResponse<Buffer> result = ar.result();
+                future.complete(result.bodyAsString());
+            } else {
+                future.fail(ar.cause());
+            }
+        });
         
         return SafeVertxCompletableFuture.from(vertx, future);
     }

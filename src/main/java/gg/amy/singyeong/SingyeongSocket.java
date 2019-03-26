@@ -57,7 +57,7 @@ public final class SingyeongSocket {
     
     private void connectLoop(final Future<Void> future) {
         logger.info("Starting Singyeong connect...");
-        client.websocketAbs(singyeong.serverUrl(), null, null, null,
+        client.websocketAbs(singyeong.gatewayUrl(), null, null, null,
                 socket -> {
                     handleSocketConnect(socket);
                     future.complete(null);

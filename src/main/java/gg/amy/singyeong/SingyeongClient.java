@@ -418,7 +418,7 @@ public final class SingyeongClient {
      * be fired. See {@link #onInvalid(Consumer)}.
      *
      * @param appId   The application id to target.
-     * @param nonce   THe nonce, used for awaiting responses.
+     * @param nonce   The nonce, used for awaiting responses.
      * @param query   The routing query. See {@link QueryBuilder}.
      * @param payload The payload to send. Will be converted to JSON.
      * @param <T>     Type of the payload.
@@ -435,7 +435,7 @@ public final class SingyeongClient {
      * be fired. See {@link #onInvalid(Consumer)}.
      *
      * @param appId    The application id to target.
-     * @param nonce    THe nonce, used for awaiting responses.
+     * @param nonce    The nonce, used for awaiting responses.
      * @param query    The routing query. See {@link QueryBuilder}.
      * @param payload  The payload to send. Will be converted to JSON.
      * @param optional Whether or not the routing query is optional.
@@ -446,6 +446,122 @@ public final class SingyeongClient {
                               @Nullable final T payload, final boolean optional) {
         final var msg = createDispatch("BROADCAST", appId, nonce, query, optional, payload);
         socket.send(msg);
+    }
+    
+    /**
+     * Send a message to a single target node matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param tags    The application tags to use for discovering a target.
+     * @param query   The routing query. See {@link QueryBuilder}.
+     * @param payload The payload to send. Will be converted to JSON.
+     * @param <T>     Type of the payload.
+     */
+    public <T> void send(@Nonnull final List<String> tags, @Nonnull final JsonArray query, @Nullable final T payload) {
+        send(tags, null, query, payload);
+    }
+    
+    /**
+     * Send a message to a single target node matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param tags    The application tags to use for discovering a target.
+     * @param nonce   The nonce, used for awaiting responses.
+     * @param query   The routing query. See {@link QueryBuilder}.
+     * @param payload The payload to send. Will be converted to JSON.
+     * @param <T>     Type of the payload.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public <T> void send(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
+                         @Nullable final T payload) {
+        send(tags, nonce, query, payload, false);
+    }
+    
+    /**
+     * Send a message to a single target node matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param tags     The application tags to use for discovering a target.
+     * @param nonce    The nonce, used for awaiting responses.
+     * @param query    The routing query. See {@link QueryBuilder}.
+     * @param payload  The payload to send. Will be converted to JSON.
+     * @param optional Whether or not the routing query is optional.
+     * @param <T>      Type of the payload.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public <T> void send(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
+                         @Nullable final T payload, final boolean optional) {
+        final var msg = createDispatch("SEND", tags, nonce, query, optional, payload);
+        socket.send(msg);
+    }
+    
+    /**
+     * Send a message to a all target nodes matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param tags    The application tags to use for discovering a target.
+     * @param query   The routing query. See {@link QueryBuilder}.
+     * @param payload The payload to send. Will be converted to JSON.
+     * @param <T>     Type of the payload.
+     */
+    public <T> void broadcast(@Nonnull final List<String> tags, @Nonnull final JsonArray query, @Nullable final T payload) {
+        broadcast(tags, null, query, payload);
+    }
+    
+    /**
+     * Send a message to a all target nodes matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param tags    The application tags to use for discovering a target.
+     * @param nonce   The nonce, used for awaiting responses.
+     * @param query   The routing query. See {@link QueryBuilder}.
+     * @param payload The payload to send. Will be converted to JSON.
+     * @param <T>     Type of the payload.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public <T> void broadcast(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
+                              @Nullable final T payload) {
+        broadcast(tags, nonce, query, payload, false);
+    }
+    
+    /**
+     * Send a message to a all target nodes matching the routing query
+     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
+     * be fired. See {@link #onInvalid(Consumer)}.
+     *
+     * @param tags     The application tags to use for discovering a target.
+     * @param nonce    The nonce, used for awaiting responses.
+     * @param query    The routing query. See {@link QueryBuilder}.
+     * @param payload  The payload to send. Will be converted to JSON.
+     * @param optional Whether or not the routing query is optional.
+     * @param <T>      Type of the payload.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public <T> void broadcast(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
+                              @Nullable final T payload, final boolean optional) {
+        final var msg = createDispatch("BROADCAST", tags, nonce, query, optional, payload);
+        socket.send(msg);
+    }
+    
+    private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nonnull final Object application,
+                                                @Nullable final String nonce, @Nonnull final JsonArray query,
+                                                final boolean optional, @Nullable final T payload) {
+        return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(),
+                new JsonObject()
+                        .put("sender", id.toString())
+                        .put("target", new JsonObject()
+                                .put("optional", optional)
+                                .put("application", application)
+                                .put("ops", query)
+                        )
+                        .put("nonce", nonce)
+                        .put("payload", JsonObject.mapFrom(payload))
+        );
     }
     
     /**
@@ -466,22 +582,6 @@ public final class SingyeongClient {
         socket.send(msg);
     }
     
-    private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nonnull final String appId,
-                                                @Nullable final String nonce, @Nonnull final JsonArray query,
-                                                final boolean optional, @Nullable final T payload) {
-        return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(),
-                new JsonObject()
-                        .put("sender", id.toString())
-                        .put("target", new JsonObject()
-                                .put("optional", optional)
-                                .put("application", appId)
-                                .put("ops", query)
-                        )
-                        .put("nonce", nonce)
-                        .put("payload", JsonObject.mapFrom(payload))
-        );
-    }
-    
     private <T> void codec(@Nonnull final Class<T> cls) {
         vertx.eventBus().registerDefaultCodec(cls, new JsonPojoCodec<>(cls));
     }
@@ -489,7 +589,7 @@ public final class SingyeongClient {
     private static class FakeCodec<T> implements MessageCodec<T, Object> {
         @Override
         public void encodeToWire(final Buffer buffer, final T dispatch) {
-        
+            
         }
         
         @Override

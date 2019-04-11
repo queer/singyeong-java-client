@@ -162,7 +162,7 @@ public final class SingyeongClient {
      * @return A future that completes with the response body when the request
      * is complete.
      */
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final String target, @Nonnull final JsonArray query) {
         return proxy(method, route, target, query, ArrayListMultimap.create(), null);
     }
@@ -179,7 +179,7 @@ public final class SingyeongClient {
      * @return A future that completes with the response body when the request
      * is complete.
      */
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final String target, @Nonnull final JsonArray query,
                                            @Nullable final Object body) {
         return proxy(method, route, target, query, ArrayListMultimap.create(), body);
@@ -197,7 +197,7 @@ public final class SingyeongClient {
      * @return A future that completes with the response body when the request
      * is complete.
      */
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final String target, @Nonnull final JsonArray query,
                                            @Nonnull final Multimap<String, String> headers) {
         return proxy(method, route, target, query, headers, null);
@@ -217,7 +217,7 @@ public final class SingyeongClient {
      * is complete.
      */
     @SuppressWarnings("WeakerAccess")
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final String target, @Nonnull final JsonArray query,
                                            @Nonnull final Multimap<String, String> headers, @Nullable final Object body) {
         return proxy0(method, route, target, query, headers, body);
@@ -234,7 +234,7 @@ public final class SingyeongClient {
      * @return A future that completes with the response body when the request
      * is complete.
      */
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final List<String> target, @Nonnull final JsonArray query) {
         return proxy(method, route, target, query, ArrayListMultimap.create(), null);
     }
@@ -251,7 +251,7 @@ public final class SingyeongClient {
      * @return A future that completes with the response body when the request
      * is complete.
      */
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final List<String> target, @Nonnull final JsonArray query,
                                            @Nullable final Object body) {
         return proxy(method, route, target, query, ArrayListMultimap.create(), body);
@@ -269,7 +269,7 @@ public final class SingyeongClient {
      * @return A future that completes with the response body when the request
      * is complete.
      */
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final List<String> target, @Nonnull final JsonArray query,
                                            @Nonnull final Multimap<String, String> headers) {
         return proxy(method, route, target, query, headers, null);
@@ -289,16 +289,16 @@ public final class SingyeongClient {
      * is complete.
      */
     @SuppressWarnings("WeakerAccess")
-    public CompletableFuture<String> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
+    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
                                            @Nonnull final List<String> target, @Nonnull final JsonArray query,
                                            @Nonnull final Multimap<String, String> headers, @Nullable final Object body) {
         return proxy0(method, route, new JsonArray(target), query, headers, body);
     }
     
-    private CompletableFuture<String> proxy0(final HttpMethod method, final String route, final Object target,
+    private CompletableFuture<Buffer> proxy0(final HttpMethod method, final String route, final Object target,
                                              final JsonArray query, final Multimap<String, String> headers,
                                              final Object body) {
-        final var future = Future.<String>future();
+        final var future = Future.<Buffer>future();
         
         final var headersObj = new JsonObject();
         // TODO: Yikes
@@ -320,7 +320,7 @@ public final class SingyeongClient {
                 .sendJson(payload, ar -> {
                     if(ar.succeeded()) {
                         final var result = ar.result();
-                        future.complete(result.bodyAsString());
+                        future.complete(result.body());
                     } else {
                         future.fail(ar.cause());
                     }

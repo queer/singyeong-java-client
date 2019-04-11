@@ -11,7 +11,6 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -317,14 +316,15 @@ public final class SingyeongClient {
                         .put("ops", query)
                 );
         
-        client.postAbs(serverUrl + "/api/v1/proxy").sendJson(payload, ar -> {
-            if(ar.succeeded()) {
-                final var result = ar.result();
-                future.complete(result.bodyAsString());
-            } else {
-                future.fail(ar.cause());
-            }
-        });
+        client.postAbs(serverUrl + "/api/v1/proxy").putHeader("Authorization", authentication)
+                .sendJson(payload, ar -> {
+                    if(ar.succeeded()) {
+                        final var result = ar.result();
+                        future.complete(result.bodyAsString());
+                    } else {
+                        future.fail(ar.cause());
+                    }
+                });
         
         return SafeVertxCompletableFuture.from(vertx, future);
     }

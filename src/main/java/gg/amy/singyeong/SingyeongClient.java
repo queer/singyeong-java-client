@@ -309,7 +309,7 @@ public final class SingyeongClient {
                 .put("route", route)
                 .put("headers", headersObj)
                 .put("body", body)
-                .put("target", new JsonObject()
+                .put("query", new JsonObject()
                         // TODO: Allow changing this
                         .put("optional", false)
                         .put("application", target)

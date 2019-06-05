@@ -1,14 +1,11 @@
 package gg.amy.singyeong;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import gg.amy.vertx.SafeVertxCompletableFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -154,166 +151,26 @@ public final class SingyeongClient {
     /**
      * Proxies an HTTP request to the target returned by the routing query.
      *
-     * @param method HTTP method to use for the proxied request.
-     * @param route  Route on the target to proxy the request to.
-     * @param target Service that should be targeted by the request.
-     * @param query  Query used to decide how to route the request.
+     * @param request The request to proxy.
      *
      * @return A future that completes with the response body when the request
      * is complete.
      */
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final String target, @Nonnull final JsonArray query) {
-        return proxy(method, route, target, query, ArrayListMultimap.create(), null);
-    }
-    
-    /**
-     * Proxies an HTTP request to the target returned by the routing query.
-     *
-     * @param method HTTP method to use for the proxied request.
-     * @param route  Route on the target to proxy the request to.
-     * @param target Service that should be targeted by the request.
-     * @param query  Query used to decide how to route the request.
-     * @param body   HTTP request body to send.
-     *
-     * @return A future that completes with the response body when the request
-     * is complete.
-     */
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final String target, @Nonnull final JsonArray query,
-                                           @Nullable final Object body) {
-        return proxy(method, route, target, query, ArrayListMultimap.create(), body);
-    }
-    
-    /**
-     * Proxies an HTTP request to the target returned by the routing query.
-     *
-     * @param method  HTTP method to use for the proxied request.
-     * @param route   Route on the target to proxy the request to.
-     * @param target  Service that should be targeted by the request.
-     * @param query   Query used to decide how to route the request.
-     * @param headers Headers to send on the request.
-     *
-     * @return A future that completes with the response body when the request
-     * is complete.
-     */
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final String target, @Nonnull final JsonArray query,
-                                           @Nonnull final Multimap<String, String> headers) {
-        return proxy(method, route, target, query, headers, null);
-    }
-    
-    /**
-     * Proxies an HTTP request to the target returned by the routing query.
-     *
-     * @param method  HTTP method to use for the proxied request.
-     * @param route   Route on the target to proxy the request to.
-     * @param target  Service that should be targeted by the request.
-     * @param query   Query used to decide how to route the request.
-     * @param headers Headers to send on the request.
-     * @param body    HTTP request body to send.
-     *
-     * @return A future that completes with the response body when the request
-     * is complete.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final String target, @Nonnull final JsonArray query,
-                                           @Nonnull final Multimap<String, String> headers, @Nullable final Object body) {
-        return proxy0(method, route, target, query, headers, body);
-    }
-    
-    /**
-     * Proxies an HTTP request to the target returned by the routing query.
-     *
-     * @param method HTTP method to use for the proxied request.
-     * @param route  Route on the target to proxy the request to.
-     * @param target Service that should be targeted by the request.
-     * @param query  Query used to decide how to route the request.
-     *
-     * @return A future that completes with the response body when the request
-     * is complete.
-     */
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final List<String> target, @Nonnull final JsonArray query) {
-        return proxy(method, route, target, query, ArrayListMultimap.create(), null);
-    }
-    
-    /**
-     * Proxies an HTTP request to the target returned by the routing query.
-     *
-     * @param method HTTP method to use for the proxied request.
-     * @param route  Route on the target to proxy the request to.
-     * @param target Service that should be targeted by the request.
-     * @param query  Query used to decide how to route the request.
-     * @param body   HTTP request body to send.
-     *
-     * @return A future that completes with the response body when the request
-     * is complete.
-     */
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final List<String> target, @Nonnull final JsonArray query,
-                                           @Nullable final Object body) {
-        return proxy(method, route, target, query, ArrayListMultimap.create(), body);
-    }
-    
-    /**
-     * Proxies an HTTP request to the target returned by the routing query.
-     *
-     * @param method  HTTP method to use for the proxied request.
-     * @param route   Route on the target to proxy the request to.
-     * @param target  Service that should be targeted by the request.
-     * @param query   Query used to decide how to route the request.
-     * @param headers Headers to send on the request.
-     *
-     * @return A future that completes with the response body when the request
-     * is complete.
-     */
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final List<String> target, @Nonnull final JsonArray query,
-                                           @Nonnull final Multimap<String, String> headers) {
-        return proxy(method, route, target, query, headers, null);
-    }
-    
-    /**
-     * Proxies an HTTP request to the target returned by the routing query.
-     *
-     * @param method  HTTP method to use for the proxied request.
-     * @param route   Route on the target to proxy the request to.
-     * @param target  Service that should be targeted by the request.
-     * @param query   Query used to decide how to route the request.
-     * @param headers Headers to send on the request.
-     * @param body    HTTP request body to send.
-     *
-     * @return A future that completes with the response body when the request
-     * is complete.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public CompletableFuture<Buffer> proxy(@Nonnull final HttpMethod method, @Nonnull final String route,
-                                           @Nonnull final List<String> target, @Nonnull final JsonArray query,
-                                           @Nonnull final Multimap<String, String> headers, @Nullable final Object body) {
-        return proxy0(method, route, new JsonArray(target), query, headers, body);
-    }
-    
-    private CompletableFuture<Buffer> proxy0(final HttpMethod method, final String route, final Object target,
-                                             final JsonArray query, final Multimap<String, String> headers,
-                                             final Object body) {
+    public CompletableFuture<Buffer> proxy(@Nonnull final ProxiedRequest request) {
         final var future = Future.<Buffer>future();
-        
-        final var headersObj = new JsonObject();
-        // TODO: Yikes
-        headers.asMap().forEach((k, v) -> headersObj.put(k, new JsonArray(new ArrayList<>(v))));
+        final var headers = new JsonObject();
+        request.headers().asMap().forEach((k, v) -> headers.put(k, new JsonArray(new ArrayList<>(v))));
         
         final var payload = new JsonObject()
-                .put("method", method.name().toUpperCase())
-                .put("route", route)
-                .put("headers", headersObj)
-                .put("body", body)
+                .put("method", request.method().name().toUpperCase())
+                .put("route", request.route())
+                .put("headers", headers)
+                .put("body", request.body())
                 .put("query", new JsonObject()
                         // TODO: Allow changing this
                         .put("optional", false)
-                        .put("application", target)
-                        .put("ops", query)
+                        .put("application", request.target() != null ? request.target() : request.targetTags())
+                        .put("ops", request.query())
                 );
         
         client.postAbs(serverUrl + "/api/v1/proxy").putHeader("Authorization", authentication)

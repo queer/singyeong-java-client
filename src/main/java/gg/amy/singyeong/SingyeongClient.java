@@ -4,7 +4,7 @@ import gg.amy.singyeong.client.SingyeongMessage;
 import gg.amy.singyeong.client.SingyeongOp;
 import gg.amy.singyeong.client.SingyeongSocket;
 import gg.amy.singyeong.client.SingyeongType;
-import gg.amy.singyeong.client.query.QueryBuilder;
+import gg.amy.singyeong.client.query.Query;
 import gg.amy.singyeong.data.Dispatch;
 import gg.amy.singyeong.data.Invalid;
 import gg.amy.singyeong.data.ProxiedRequest;
@@ -34,7 +34,7 @@ import java.util.function.Consumer;
  * @author amy
  * @since 10/23/18.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 @Accessors(fluent = true)
 public final class SingyeongClient {
     public static final String SINGYEONG_DISPATCH_EVENT_CHANNEL = "singyeong:event:dispatch";
@@ -212,221 +212,37 @@ public final class SingyeongClient {
      *
      * @return The consumer, in case you want to unregister it.
      */
-    @SuppressWarnings("WeakerAccess")
     public MessageConsumer<Invalid> onInvalid(@Nonnull final Consumer<Invalid> consumer) {
         return vertx.eventBus().consumer(SINGYEONG_INVALID_EVENT_CHANNEL, m -> consumer.accept(m.body()));
     }
     
-    /**
-     * Send a message to a single target node matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param appId   The application id to target.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    public <T> void send(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        send(appId, null, query, payload);
+    public <T> void send(@Nonnull final Query query, @Nullable final T payload) {
+        send(query, null, payload);
     }
     
-    /**
-     * Send a message to a single target node matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param appId   The application id to target.
-     * @param nonce   The nonce, used for awaiting responses.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void send(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
-                         @Nullable final T payload) {
-        send(appId, nonce, query, payload, false);
-    }
-    
-    /**
-     * Send a message to a single target node matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param appId    The application id to target.
-     * @param nonce    The nonce, used for awaiting responses.
-     * @param query    The routing query. See {@link QueryBuilder}.
-     * @param payload  The payload to send. Will be converted to JSON.
-     * @param optional Whether or not the routing query is optional.
-     * @param <T>      Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void send(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
-                         @Nullable final T payload, final boolean optional) {
-        final var msg = createDispatch("SEND", appId, nonce, query, optional, payload);
+    public <T> void send(@Nonnull final Query query, @Nullable final String nonce, @Nullable final T payload) {
+        final var msg = createDispatch("SEND", nonce, query, payload);
         socket.send(msg);
     }
     
-    /**
-     * Send a message to a all target nodes matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param appId   The application id to target.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    public <T> void broadcast(@Nonnull final String appId, @Nonnull final JsonArray query, @Nullable final T payload) {
-        broadcast(appId, null, query, payload);
+    public <T> void broadcast(@Nonnull final Query query, @Nullable final T payload) {
+        send(query, null, payload);
     }
     
-    /**
-     * Send a message to a all target nodes matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param appId   The application id to target.
-     * @param nonce   The nonce, used for awaiting responses.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void broadcast(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
-                              @Nullable final T payload) {
-        broadcast(appId, nonce, query, payload, false);
-    }
-    
-    /**
-     * Send a message to a all target nodes matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param appId    The application id to target.
-     * @param nonce    The nonce, used for awaiting responses.
-     * @param query    The routing query. See {@link QueryBuilder}.
-     * @param payload  The payload to send. Will be converted to JSON.
-     * @param optional Whether or not the routing query is optional.
-     * @param <T>      Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void broadcast(@Nonnull final String appId, @Nullable final String nonce, @Nonnull final JsonArray query,
-                              @Nullable final T payload, final boolean optional) {
-        final var msg = createDispatch("BROADCAST", appId, nonce, query, optional, payload);
+    public <T> void broadcast(@Nonnull final Query query, @Nullable final String nonce, @Nullable final T payload) {
+        final var msg = createDispatch("BROADCAST", nonce, query, payload);
         socket.send(msg);
     }
     
-    /**
-     * Send a message to a single target node matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param tags    The application tags to use for discovering a target.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    public <T> void send(@Nonnull final List<String> tags, @Nonnull final JsonArray query, @Nullable final T payload) {
-        send(tags, null, query, payload);
-    }
-    
-    /**
-     * Send a message to a single target node matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param tags    The application tags to use for discovering a target.
-     * @param nonce   The nonce, used for awaiting responses.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void send(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
-                         @Nullable final T payload) {
-        send(tags, nonce, query, payload, false);
-    }
-    
-    /**
-     * Send a message to a single target node matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param tags     The application tags to use for discovering a target.
-     * @param nonce    The nonce, used for awaiting responses.
-     * @param query    The routing query. See {@link QueryBuilder}.
-     * @param payload  The payload to send. Will be converted to JSON.
-     * @param optional Whether or not the routing query is optional.
-     * @param <T>      Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void send(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
-                         @Nullable final T payload, final boolean optional) {
-        final var msg = createDispatch("SEND", tags, nonce, query, optional, payload);
-        socket.send(msg);
-    }
-    
-    /**
-     * Send a message to a all target nodes matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param tags    The application tags to use for discovering a target.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    public <T> void broadcast(@Nonnull final List<String> tags, @Nonnull final JsonArray query, @Nullable final T payload) {
-        broadcast(tags, null, query, payload);
-    }
-    
-    /**
-     * Send a message to a all target nodes matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param tags    The application tags to use for discovering a target.
-     * @param nonce   The nonce, used for awaiting responses.
-     * @param query   The routing query. See {@link QueryBuilder}.
-     * @param payload The payload to send. Will be converted to JSON.
-     * @param <T>     Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void broadcast(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
-                              @Nullable final T payload) {
-        broadcast(tags, nonce, query, payload, false);
-    }
-    
-    /**
-     * Send a message to a all target nodes matching the routing query
-     * provided. If no nodes match, an {@link SingyeongOp#INVALID} event will
-     * be fired. See {@link #onInvalid(Consumer)}.
-     *
-     * @param tags     The application tags to use for discovering a target.
-     * @param nonce    The nonce, used for awaiting responses.
-     * @param query    The routing query. See {@link QueryBuilder}.
-     * @param payload  The payload to send. Will be converted to JSON.
-     * @param optional Whether or not the routing query is optional.
-     * @param <T>      Type of the payload.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public <T> void broadcast(@Nonnull final List<String> tags, @Nullable final String nonce, @Nonnull final JsonArray query,
-                              @Nullable final T payload, final boolean optional) {
-        final var msg = createDispatch("BROADCAST", tags, nonce, query, optional, payload);
-        socket.send(msg);
-    }
-    
-    private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nonnull final Object application,
-                                                @Nullable final String nonce, @Nonnull final JsonArray query,
-                                                final boolean optional, @Nullable final T payload) {
+    private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nullable final String nonce,
+                                                @Nonnull final Query query, @Nullable final T payload) {
         return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(),
                 new JsonObject()
                         .put("sender", id.toString())
                         .put("target", new JsonObject()
-                                .put("optional", optional)
-                                .put("application", application)
-                                .put("ops", query)
+                                .put("optional", query.optional())
+                                .put("application", query.target() == null ? query.tags() : query.target())
+                                .put("ops", query.ops())
                         )
                         .put("nonce", nonce)
                         .put("payload", JsonObject.mapFrom(payload))

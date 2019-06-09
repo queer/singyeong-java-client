@@ -81,7 +81,6 @@ public final class SingyeongClient {
     private SingyeongClient(@Nonnull final Vertx vertx, @Nonnull final String dsn, @Nullable final String ip,
                             @Nonnull final List<String> tags) {
         this.vertx = vertx;
-        // TODO: Allow configuring?
         client = WebClient.create(vertx);
         this.ip = ip;
         try {

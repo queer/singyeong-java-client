@@ -1,4 +1,4 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.data;
 
 import lombok.Value;
 import lombok.experimental.Accessors;

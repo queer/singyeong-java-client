@@ -1,4 +1,4 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.util;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
@@ -11,7 +11,6 @@ import io.vertx.core.json.JsonObject;
 public class JsonPojoCodec<T> implements MessageCodec<T, T> {
     private final Class<T> type;
     
-    @SuppressWarnings("unchecked")
     public JsonPojoCodec(final Class<T> type) {
         this.type = type;
     }

@@ -1,4 +1,4 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.data;
 
 import io.vertx.core.json.JsonObject;
 import lombok.Value;

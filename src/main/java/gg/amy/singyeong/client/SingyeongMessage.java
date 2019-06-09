@@ -1,4 +1,4 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.client;
 
 import io.vertx.core.json.JsonObject;
 import lombok.Value;
@@ -18,13 +18,13 @@ public class SingyeongMessage {
     private long timestamp;
     private JsonObject data;
     
-    public static SingyeongMessage fromJson(@Nonnull final JsonObject json) {
+    static SingyeongMessage fromJson(@Nonnull final JsonObject json) {
         return new SingyeongMessage(SingyeongOp.fromOp(json.getInteger("op")),
                 json.getString("t", null), json.getLong("ts"),
                 json.getJsonObject("d"));
     }
     
-    public JsonObject toJson() {
+    JsonObject toJson() {
         return new JsonObject()
                 .put("op", op.code())
                 .put("t", type)

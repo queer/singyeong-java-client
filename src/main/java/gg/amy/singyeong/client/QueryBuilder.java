@@ -1,4 +1,4 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.client;
 
 import com.google.common.collect.ImmutableList;
 import io.vertx.core.json.JsonArray;
@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author amy

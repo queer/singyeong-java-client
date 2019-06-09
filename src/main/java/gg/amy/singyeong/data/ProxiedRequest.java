@@ -1,4 +1,4 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.data;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -22,7 +22,6 @@ import java.util.List;
 @Value
 @Accessors(fluent = true)
 @Builder(toBuilder = true)
-@SuppressWarnings("WeakerAccess")
 public final class ProxiedRequest {
     private final HttpMethod method;
     private final String route;

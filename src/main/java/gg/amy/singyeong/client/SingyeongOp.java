@@ -1,4 +1,4 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.client;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;

@@ -1,5 +1,10 @@
 package gg.amy.singyeong;
 
+import gg.amy.singyeong.client.*;
+import gg.amy.singyeong.data.Dispatch;
+import gg.amy.singyeong.data.Invalid;
+import gg.amy.singyeong.data.ProxiedRequest;
+import gg.amy.singyeong.util.JsonPojoCodec;
 import gg.amy.vertx.SafeVertxCompletableFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -9,7 +14,6 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -29,9 +33,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 @Accessors(fluent = true)
 public final class SingyeongClient {
-    @SuppressWarnings("WeakerAccess")
     public static final String SINGYEONG_DISPATCH_EVENT_CHANNEL = "singyeong:event:dispatch";
-    @SuppressWarnings("WeakerAccess")
     public static final String SINGYEONG_INVALID_EVENT_CHANNEL = "singyeong:event:invalid";
     @Getter
     private final Vertx vertx;
@@ -40,14 +42,18 @@ public final class SingyeongClient {
     @Getter
     private final String serverUrl;
     @Getter
-    private final String gatewayUrl;
+    private final String gatewayHost;
+    @Getter
+    private final int gatewayPort;
+    @Getter
+    private final boolean gatewaySsl;
     @Getter
     private final String appId;
     @Getter
     private final String authentication;
     @Getter
     private final String ip;
-    @Getter(AccessLevel.PACKAGE)
+    @Getter
     private final Map<String, JsonObject> metadataCache = new ConcurrentHashMap<>();
     @Getter
     private final UUID id = UUID.randomUUID();
@@ -90,7 +96,9 @@ public final class SingyeongClient {
                 server += ":" + uri.getPort();
             }
             serverUrl = server.replaceFirst("ws", "http");
-            gatewayUrl = server + "/gateway/websocket";
+            gatewayHost = uri.getHost();
+            gatewayPort = uri.getPort() > -1 ? uri.getPort() : 80;
+            gatewaySsl = server.startsWith("wss://");
             final String userInfo = uri.getUserInfo();
             if(userInfo == null) {
                 throw new IllegalArgumentException("Didn't pass auth to singyeong DSN!");

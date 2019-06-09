@@ -1,11 +1,11 @@
-package gg.amy.singyeong;
+package gg.amy.singyeong.client;
 
+import gg.amy.singyeong.SingyeongClient;
+import gg.amy.singyeong.data.Dispatch;
+import gg.amy.singyeong.data.Invalid;
 import gg.amy.vertx.SafeVertxCompletableFuture;
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.WebSocket;
-import io.vertx.core.http.WebSocketFrame;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author amy
  * @since 10/23/18.
  */
-@SuppressWarnings("WeakerAccess")
 @RequiredArgsConstructor
 @Accessors(fluent = true)
 public final class SingyeongSocket {
@@ -39,7 +38,7 @@ public final class SingyeongSocket {
     private HttpClient client;
     
     @Nonnull
-    CompletableFuture<Void> connect() {
+    public CompletableFuture<Void> connect() {
         final var future = Future.<Void>future();
         
         client = singyeong.vertx().createHttpClient(new HttpClientOptions()
@@ -57,15 +56,21 @@ public final class SingyeongSocket {
     
     private void connectLoop(final Future<Void> future) {
         logger.info("Starting Singyeong connect...");
-        client.websocketAbs(singyeong.gatewayUrl(), null, null, null,
-                socket -> {
-                    handleSocketConnect(socket);
-                    future.complete(null);
-                },
-                _e -> {
-                    _e.printStackTrace();
-                    singyeong.vertx().setTimer(1000L, __ -> connectLoop(future));
-                });
+        final WebSocketConnectOptions opts = new WebSocketConnectOptions()
+                .setHost(singyeong.gatewayHost())
+                .setPort(singyeong.gatewayPort())
+                .setSsl(singyeong.gatewaySsl())
+                .setURI("/gateway/websocket");
+        client.webSocket(opts, res -> {
+            if(res.succeeded()) {
+                handleSocketConnect(res.result());
+                future.complete(null);
+            } else {
+                final var e = res.cause();
+                e.printStackTrace();
+                singyeong.vertx().setTimer(1000L, __ -> connectLoop(future));
+            }
+        });
     }
     
     private void handleSocketConnect(@Nonnull final WebSocket socket) {
@@ -138,7 +143,7 @@ public final class SingyeongSocket {
         }
     }
     
-    void send(@Nonnull final SingyeongMessage msg) {
+    public void send(@Nonnull final SingyeongMessage msg) {
         if(socketRef.get() != null) {
             socketRef.get().writeTextMessage(msg.toJson().encode());
             logger.debug("Sending Singyeong payload:\n{}", msg.toJson().encodePrettily());

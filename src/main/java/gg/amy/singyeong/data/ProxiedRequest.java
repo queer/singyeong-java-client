@@ -2,8 +2,8 @@ package gg.amy.singyeong.data;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import gg.amy.singyeong.client.query.Query;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonArray;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
@@ -11,7 +11,6 @@ import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * A proxied request that Singyeong can execute on behalf of the client.
@@ -23,11 +22,10 @@ import java.util.List;
 @Accessors(fluent = true)
 @Builder(toBuilder = true)
 public final class ProxiedRequest {
-    private final HttpMethod method;
+    @Default
+    private final HttpMethod method = HttpMethod.GET;
     private final String route;
-    private final String target;
-    private final List<String> targetTags;
-    private final JsonArray query;
+    private final Query query;
     @Default
     private final Multimap<String, String> headers = Multimaps.newMultimap(new HashMap<>(), ArrayList::new);
     private final Object body;

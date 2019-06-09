@@ -1,6 +1,10 @@
 package gg.amy.singyeong;
 
-import gg.amy.singyeong.client.*;
+import gg.amy.singyeong.client.SingyeongMessage;
+import gg.amy.singyeong.client.SingyeongOp;
+import gg.amy.singyeong.client.SingyeongSocket;
+import gg.amy.singyeong.client.SingyeongType;
+import gg.amy.singyeong.client.query.QueryBuilder;
 import gg.amy.singyeong.data.Dispatch;
 import gg.amy.singyeong.data.Invalid;
 import gg.amy.singyeong.data.ProxiedRequest;
@@ -169,16 +173,17 @@ public final class SingyeongClient {
         final var headers = new JsonObject();
         request.headers().asMap().forEach((k, v) -> headers.put(k, new JsonArray(new ArrayList<>(v))));
         
+        final var query = request.query();
         final var payload = new JsonObject()
                 .put("method", request.method().name().toUpperCase())
-                .put("route", request.route())
+                // Assume that route is / if none specified
+                .put("route", request.route() == null ? "/" : request.route())
                 .put("headers", headers)
                 .put("body", request.body())
                 .put("query", new JsonObject()
-                        // TODO: Allow changing this
-                        .put("optional", false)
-                        .put("application", request.target() != null ? request.target() : request.targetTags())
-                        .put("ops", request.query())
+                        .put("optional", query.optional())
+                        .put("application", query.target() == null ? query.tags() : query.target())
+                        .put("ops", query.ops())
                 );
         
         client.postAbs(serverUrl + "/api/v1/proxy").putHeader("Authorization", authentication)

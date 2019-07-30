@@ -17,6 +17,7 @@ import java.util.List;
 public final class QueryBuilder {
     private final Collection<JsonObject> ops = new ArrayList<>();
     private boolean optional;
+    private boolean restricted;
     private String hashKey;
     private String target;
     private Collection<String> tags;
@@ -113,7 +114,12 @@ public final class QueryBuilder {
         return this;
     }
     
-    public QueryBuilder target(final String target) {
+    public QueryBuilder restricted(final boolean restricted) {
+        this.restricted = restricted;
+        return this;
+    }
+    
+    public QueryBuilder target(@Nonnull final String target) {
         if(tags != null && !tags.isEmpty()) {
             throw new IllegalStateException("Attempted to set target string when target tags are already set!");
         }
@@ -121,7 +127,7 @@ public final class QueryBuilder {
         return this;
     }
     
-    public QueryBuilder target(final Collection<String> tags) {
+    public QueryBuilder target(@Nonnull final Collection<String> tags) {
         if(target != null && !target.isEmpty()) {
             throw new IllegalStateException("Attempted to set target tags when target string is already set!");
         }
@@ -129,12 +135,12 @@ public final class QueryBuilder {
         return this;
     }
     
-    public QueryBuilder hashKey(final String hashKey) {
+    public QueryBuilder hashKey(@Nonnull final String hashKey) {
         this.hashKey = hashKey;
         return this;
     }
     
     public Query build() {
-        return new Query(target, tags, new JsonArray(List.copyOf(ops)), optional, hashKey != null, hashKey);
+        return new Query(target, tags, new JsonArray(List.copyOf(ops)), optional, restricted, hashKey != null, hashKey);
     }
 }

@@ -20,6 +20,7 @@ public final class Query {
     private final Collection<String> tags;
     private final JsonArray ops;
     private final boolean optional;
+    private final boolean restricted;
     private final boolean consistent;
     private final String hashKey;
 }

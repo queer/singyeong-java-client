@@ -181,6 +181,7 @@ public final class SingyeongClient {
                 .put("body", request.body())
                 .put("query", new JsonObject()
                         .put("optional", query.optional())
+                        .put("restricted", query.restricted())
                         .put("application", query.target() == null ? query.tags() : query.target())
                         .put("ops", query.ops())
                 );
@@ -243,6 +244,7 @@ public final class SingyeongClient {
                 .put("sender", id.toString())
                 .put("target", new JsonObject()
                         .put("optional", query.optional())
+                        .put("restricted", query.restricted())
                         .put("application", query.target() == null ? query.tags() : query.target())
                         .put("ops", query.ops())
                 )

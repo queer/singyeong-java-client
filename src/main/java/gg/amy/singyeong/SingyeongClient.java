@@ -184,6 +184,9 @@ public final class SingyeongClient {
                         .put("application", query.target() == null ? query.tags() : query.target())
                         .put("ops", query.ops())
                 );
+        if(query.consistent()) {
+            payload.getJsonObject("query").put("key", query.hashKey());
+        }
         
         client.postAbs(serverUrl + "/api/v1/proxy").putHeader("Authorization", authentication)
                 .sendJson(payload, ar -> {
@@ -236,17 +239,19 @@ public final class SingyeongClient {
     
     private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nullable final String nonce,
                                                 @Nonnull final Query query, @Nullable final T payload) {
-        return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(),
-                new JsonObject()
-                        .put("sender", id.toString())
-                        .put("target", new JsonObject()
-                                .put("optional", query.optional())
-                                .put("application", query.target() == null ? query.tags() : query.target())
-                                .put("ops", query.ops())
-                        )
-                        .put("nonce", nonce)
-                        .put("payload", JsonObject.mapFrom(payload))
-        );
+        final var data = new JsonObject()
+                .put("sender", id.toString())
+                .put("target", new JsonObject()
+                        .put("optional", query.optional())
+                        .put("application", query.target() == null ? query.tags() : query.target())
+                        .put("ops", query.ops())
+                )
+                .put("nonce", nonce)
+                .put("payload", JsonObject.mapFrom(payload));
+        if(query.consistent()) {
+            data.getJsonObject("query").put("key", query.hashKey());
+        }
+        return new SingyeongMessage(SingyeongOp.DISPATCH, type, System.currentTimeMillis(), data);
     }
     
     /**

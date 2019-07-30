@@ -116,6 +116,11 @@ public final class QueryBuilder {
         return this;
     }
     
+    public QueryBuilder hashKey(final String hashKey) {
+        this.hashKey = hashKey;
+        return this;
+    }
+    
     public Query build() {
         return new Query(target, tags, new JsonArray(List.copyOf(ops)), optional, hashKey != null, hashKey);
     }

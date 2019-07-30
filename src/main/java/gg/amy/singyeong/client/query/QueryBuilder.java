@@ -95,6 +95,19 @@ public final class QueryBuilder {
         return this;
     }
     
+    /**
+     * Directly adds the specified ops to the list of ops. <strong>Input is not
+     * validated.</strong>
+     *
+     * @param ops The ops to add.
+     *
+     * @return Itself.
+     */
+    public QueryBuilder withOps(@Nonnull final Collection<JsonObject> ops) {
+        this.ops.addAll(ops);
+        return this;
+    }
+    
     public QueryBuilder optional(final boolean optional) {
         this.optional = optional;
         return this;

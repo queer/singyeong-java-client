@@ -248,8 +248,12 @@ public final class SingyeongClient {
                         .put("application", query.target() == null ? query.tags() : query.target())
                         .put("ops", query.ops())
                 )
-                .put("nonce", nonce)
-                .put("payload", JsonObject.mapFrom(payload));
+                .put("nonce", nonce);
+        if(payload instanceof String || payload instanceof JsonObject || payload instanceof JsonArray) {
+            data.put("payload", payload);
+        } else {
+            data.put("payload", JsonObject.mapFrom(payload));
+        }
         if(query.consistent()) {
             data.getJsonObject("query").put("key", query.hashKey());
         }

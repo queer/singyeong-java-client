@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * A proxied request that Singyeong can execute on behalf of the client.
+ * A proxied request that singyeong can execute on behalf of the client.
  *
  * @author amy
  * @since 6/5/19.

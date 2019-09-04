@@ -4,7 +4,7 @@ import gg.amy.singyeong.SingyeongClient;
 import gg.amy.singyeong.data.Dispatch;
 import gg.amy.singyeong.data.Invalid;
 import gg.amy.vertx.SafeVertxCompletableFuture;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -39,22 +39,22 @@ public final class SingyeongSocket {
     
     @Nonnull
     public CompletableFuture<Void> connect() {
-        final var future = Future.<Void>future();
+        final var promise = Promise.<Void>promise();
         
         client = singyeong.vertx().createHttpClient(new HttpClientOptions()
                 .setMaxWebsocketFrameSize(Integer.MAX_VALUE)
                 .setMaxWebsocketMessageSize(Integer.MAX_VALUE));
-        future.setHandler(res -> {
+        promise.future().setHandler(res -> {
             if(res.failed()) {
                 handleClose(null);
             }
         });
-        connectLoop(future);
+        connectLoop(promise);
         
-        return SafeVertxCompletableFuture.from(singyeong.vertx(), future);
+        return SafeVertxCompletableFuture.from(singyeong.vertx(), promise.future());
     }
     
-    private void connectLoop(final Future<Void> future) {
+    private void connectLoop(final Promise<Void> promise) {
         logger.info("Starting Singyeong connect...");
         final WebSocketConnectOptions opts = new WebSocketConnectOptions()
                 .setHost(singyeong.gatewayHost())
@@ -64,11 +64,11 @@ public final class SingyeongSocket {
         client.webSocket(opts, res -> {
             if(res.succeeded()) {
                 handleSocketConnect(res.result());
-                future.complete(null);
+                promise.complete(null);
             } else {
                 final var e = res.cause();
                 e.printStackTrace();
-                singyeong.vertx().setTimer(1000L, __ -> connectLoop(future));
+                singyeong.vertx().setTimer(1000L, __ -> connectLoop(promise));
             }
         });
     }
@@ -85,7 +85,7 @@ public final class SingyeongSocket {
         logger.warn("Disconnected from Singyeong!");
         socketRef.set(null);
         reconnecting.set(true);
-        connectLoop(Future.future());
+        connectLoop(Promise.promise());
     }
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {

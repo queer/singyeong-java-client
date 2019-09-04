@@ -10,7 +10,7 @@ import gg.amy.singyeong.data.Invalid;
 import gg.amy.singyeong.data.ProxiedRequest;
 import gg.amy.singyeong.util.JsonPojoCodec;
 import gg.amy.vertx.SafeVertxCompletableFuture;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
@@ -147,16 +147,16 @@ public final class SingyeongClient {
     
     @Nonnull
     public CompletableFuture<Void> connect() {
-        final var future = Future.<Void>future();
+        final var promise = Promise.<Void>promise();
         socket = new SingyeongSocket(this);
         socket.connect()
-                .thenAccept(__ -> future.complete(null))
+                .thenAccept(__ -> promise.complete(null))
                 .exceptionally(throwable -> {
-                    future.fail(throwable);
+                    promise.fail(throwable);
                     return null;
                 });
         
-        return SafeVertxCompletableFuture.from(vertx, future);
+        return SafeVertxCompletableFuture.from(vertx, promise.future());
     }
     
     /**
@@ -168,7 +168,7 @@ public final class SingyeongClient {
      * is complete.
      */
     public CompletableFuture<Buffer> proxy(@Nonnull final ProxiedRequest request) {
-        final var future = Future.<Buffer>future();
+        final var promise = Promise.<Buffer>promise();
         final var headers = new JsonObject();
         request.headers().asMap().forEach((k, v) -> headers.put(k, new JsonArray(new ArrayList<>(v))));
         
@@ -193,13 +193,13 @@ public final class SingyeongClient {
                 .sendJson(payload, ar -> {
                     if(ar.succeeded()) {
                         final var result = ar.result();
-                        future.complete(result.body());
+                        promise.complete(result.body());
                     } else {
-                        future.fail(ar.cause());
+                        promise.fail(ar.cause());
                     }
                 });
         
-        return SafeVertxCompletableFuture.from(vertx, future);
+        return SafeVertxCompletableFuture.from(vertx, promise.future());
     }
     
     /**

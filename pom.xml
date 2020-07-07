@@ -14,7 +14,7 @@
         <lombok.version>1.18.12</lombok.version>
         <vertx.version>3.8.1</vertx.version>
         <svcf.version>50318b3</svcf.version>
-        <slf4j.version>1.7.26</slf4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
         <guava.version>24.1-jre</guava.version>
         <jsr305.version>3.0.2</jsr305.version>
     </properties>

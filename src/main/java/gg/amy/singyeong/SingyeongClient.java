@@ -12,6 +12,7 @@ import gg.amy.singyeong.util.JsonPojoCodec;
 import gg.amy.vertx.SafeVertxCompletableFuture;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -119,7 +120,11 @@ public final class SingyeongClient {
     }
     
     public static SingyeongClient create(@Nonnull final String dsn) {
-        return create(Vertx.vertx(), dsn);
+        return create(Vertx.vertx(new VertxOptions()
+                        .setWorkerPoolSize(1)
+                        .setEventLoopPoolSize(1)
+                        .setInternalBlockingPoolSize(1)),
+                dsn);
     }
     
     @SuppressWarnings("WeakerAccess")
@@ -128,7 +133,11 @@ public final class SingyeongClient {
     }
     
     public static SingyeongClient create(@Nonnull final String dsn, @Nonnull final List<String> tags) {
-        return new SingyeongClient(Vertx.vertx(), dsn, tags);
+        return new SingyeongClient(Vertx.vertx(new VertxOptions()
+                .setWorkerPoolSize(1)
+                .setEventLoopPoolSize(1)
+                .setInternalBlockingPoolSize(1)),
+                dsn, tags);
     }
     
     public static SingyeongClient create(@Nonnull final Vertx vertx, @Nonnull final String dsn,

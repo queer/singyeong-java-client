@@ -33,7 +33,6 @@ public final class SingyeongSocket {
     private final SingyeongClient singyeong;
     private final AtomicReference<WebSocket> socketRef = new AtomicReference<>(null);
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     @Getter(AccessLevel.PACKAGE)
     private HttpClient client;
     
@@ -42,9 +41,9 @@ public final class SingyeongSocket {
         final var promise = Promise.<Void>promise();
         
         client = singyeong.vertx().createHttpClient(new HttpClientOptions()
-                .setMaxWebsocketFrameSize(Integer.MAX_VALUE)
-                .setMaxWebsocketMessageSize(Integer.MAX_VALUE));
-        promise.future().setHandler(res -> {
+                .setMaxWebSocketFrameSize(Integer.MAX_VALUE)
+                .setMaxWebSocketMessageSize(Integer.MAX_VALUE));
+        promise.future().onComplete(res -> {
             if(res.failed()) {
                 handleClose(null);
             }
@@ -84,7 +83,6 @@ public final class SingyeongSocket {
     private void handleClose(final Void __) {
         logger.warn("Disconnected from Singyeong!");
         socketRef.set(null);
-        reconnecting.set(true);
         connectLoop(Promise.promise());
     }
     
@@ -96,7 +94,7 @@ public final class SingyeongSocket {
                 case HELLO: {
                     final var heartbeatInterval = msg.data().getInteger("heartbeat_interval");
                     // IDENTIFY to allow doing everything
-                    send(identify(reconnecting.get()));
+                    send(identify());
                     startHeartbeat(heartbeatInterval);
                     break;
                 }
@@ -164,18 +162,12 @@ public final class SingyeongSocket {
         });
     }
     
-    private SingyeongMessage identify(final boolean reconnecting) {
+    private SingyeongMessage identify() {
         final var payload = new JsonObject()
                 .put("client_id", singyeong.id().toString())
                 .put("application_id", singyeong.appId());
-        if(reconnecting) {
-            payload.put("reconnect", true);
-        }
         if(singyeong.authentication() != null) {
             payload.put("auth", singyeong.authentication());
-        }
-        if(singyeong.tags() != null && !singyeong.tags().isEmpty()) {
-            payload.put("tags", new JsonArray(singyeong.tags()));
         }
         payload.put("ip", ip());
         return new SingyeongMessage(SingyeongOp.IDENTIFY, null, System.currentTimeMillis(), payload);

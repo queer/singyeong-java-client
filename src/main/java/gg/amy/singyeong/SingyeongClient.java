@@ -134,9 +134,9 @@ public final class SingyeongClient {
     
     public static SingyeongClient create(@Nonnull final String dsn, @Nonnull final List<String> tags) {
         return new SingyeongClient(Vertx.vertx(new VertxOptions()
-                .setWorkerPoolSize(1)
-                .setEventLoopPoolSize(1)
-                .setInternalBlockingPoolSize(1)),
+                .setWorkerPoolSize(2)
+                .setEventLoopPoolSize(2)
+                .setInternalBlockingPoolSize(2)),
                 dsn, tags);
     }
     
@@ -234,7 +234,16 @@ public final class SingyeongClient {
     }
     
     public <T> void send(@Nonnull final Query query, @Nullable final String nonce, @Nullable final T payload) {
-        final var msg = createDispatch("SEND", nonce, query, payload);
+        send(query, nonce, false, payload);
+    }
+    
+    public <T> void send(@Nonnull final Query query, @Nullable final String nonce, final boolean optional, @Nullable final T payload) {
+        send(query, nonce, optional, false, payload);
+    }
+    
+    public <T> void send(@Nonnull final Query query, @Nullable final String nonce, final boolean optional,
+                         final boolean droppable, @Nullable final T payload) {
+        final var msg = createDispatch("SEND", nonce, query, optional, droppable, payload);
         socket.send(msg);
     }
     
@@ -243,12 +252,22 @@ public final class SingyeongClient {
     }
     
     public <T> void broadcast(@Nonnull final Query query, @Nullable final String nonce, @Nullable final T payload) {
-        final var msg = createDispatch("BROADCAST", nonce, query, payload);
+        send(query, nonce, false, payload);
+    }
+    
+    public <T> void broadcast(@Nonnull final Query query, @Nullable final String nonce, final boolean optional, @Nullable final T payload) {
+        send(query, nonce, optional, false, payload);
+    }
+    
+    public <T> void broadcast(@Nonnull final Query query, @Nullable final String nonce, final boolean optional,
+                         final boolean droppable, @Nullable final T payload) {
+        final var msg = createDispatch("BROADCAST", nonce, query, optional, droppable, payload);
         socket.send(msg);
     }
     
     private <T> SingyeongMessage createDispatch(@Nonnull final String type, @Nullable final String nonce,
-                                                @Nonnull final Query query, @Nullable final T payload) {
+                                                @Nonnull final Query query, final boolean optional, final boolean droppable,
+                                                @Nullable final T payload) {
         final var data = new JsonObject()
                 .put("sender", id.toString())
                 .put("target", new JsonObject()
@@ -294,7 +313,6 @@ public final class SingyeongClient {
     private static class FakeCodec<T> implements MessageCodec<T, Object> {
         @Override
         public void encodeToWire(final Buffer buffer, final T dispatch) {
-            
         }
         
         @Override

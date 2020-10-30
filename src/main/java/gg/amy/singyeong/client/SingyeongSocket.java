@@ -81,7 +81,7 @@ public final class SingyeongSocket {
     private void handleClose(final Void __) {
         logger.warn("Disconnected from Singyeong!");
         socketRef.set(null);
-        singyeong.vertx().setTimer(1_000L, __ -> connectLoop(Promise.promise()));
+        singyeong.vertx().setTimer(1_000L, ___ -> connectLoop(Promise.promise()));
     }
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {

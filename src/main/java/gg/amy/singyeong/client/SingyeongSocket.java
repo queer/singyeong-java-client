@@ -6,7 +6,6 @@ import gg.amy.singyeong.data.Invalid;
 import gg.amy.vertx.SafeVertxCompletableFuture;
 import io.vertx.core.Promise;
 import io.vertx.core.http.*;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,7 +19,6 @@ import javax.annotation.Nonnull;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -121,6 +119,7 @@ public final class SingyeongSocket {
                                     // lol
                                     .getJsonObject("d", new JsonObject().put("nonce", (String) null))
                                     .getString("nonce")));
+                    socketRef.get().close();
                     break;
                 }
                 case DISPATCH: {

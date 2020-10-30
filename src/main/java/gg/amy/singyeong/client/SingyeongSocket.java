@@ -65,7 +65,7 @@ public final class SingyeongSocket {
             } else {
                 final var e = res.cause();
                 e.printStackTrace();
-                singyeong.vertx().setTimer(1000L, __ -> connectLoop(promise));
+                singyeong.vertx().setTimer(5_000L, __ -> connectLoop(promise));
             }
         });
     }

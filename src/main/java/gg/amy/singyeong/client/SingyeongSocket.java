@@ -65,7 +65,7 @@ public final class SingyeongSocket {
             } else {
                 final var e = res.cause();
                 e.printStackTrace();
-                singyeong.vertx().setTimer(5_000L, __ -> connectLoop(promise));
+                singyeong.vertx().setTimer(1_000L, __ -> connectLoop(promise));
             }
         });
     }
@@ -81,7 +81,7 @@ public final class SingyeongSocket {
     private void handleClose(final Void __) {
         logger.warn("Disconnected from Singyeong!");
         socketRef.set(null);
-        connectLoop(Promise.promise());
+        singyeong.vertx().setTimer(1_000L, __ -> connectLoop(Promise.promise()));
     }
     
     private void handleFrame(@Nonnull final WebSocketFrame frame) {

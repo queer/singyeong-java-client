@@ -33,6 +33,7 @@ public final class SingyeongSocket {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     @Getter(AccessLevel.PACKAGE)
     private HttpClient client;
+    private long heartbeatTask;
     
     @Nonnull
     public CompletableFuture<Void> connect() {
@@ -81,6 +82,7 @@ public final class SingyeongSocket {
     private void handleClose(final Void __) {
         logger.warn("Disconnected from Singyeong!");
         socketRef.set(null);
+        singyeong.vertx().cancelTimer(heartbeatTask);
         singyeong.vertx().setTimer(1_000L, ___ -> connectLoop(Promise.promise()));
     }
     
@@ -153,10 +155,11 @@ public final class SingyeongSocket {
         singyeong.vertx().setTimer(1_000L, __ -> {
             send(heartbeat());
             singyeong.vertx().setPeriodic(heartbeatInterval, id -> {
+                heartbeatTask = id;
                 if(socketRef.get() != null) {
                     send(heartbeat());
                 } else {
-                    singyeong.vertx().cancelTimer(id);
+                    singyeong.vertx().cancelTimer(heartbeatTask);
                 }
             });
         });

@@ -89,6 +89,7 @@ public final class SingyeongSocket {
     private void handleFrame(@Nonnull final WebSocketFrame frame) {
         if(frame.isText()) {
             final var payload = new JsonObject(frame.textData());
+            logger.trace("Received new JSON payload: {}", payload);
             final var msg = SingyeongMessage.fromJson(payload);
             switch(msg.op()) {
                 case HELLO: {

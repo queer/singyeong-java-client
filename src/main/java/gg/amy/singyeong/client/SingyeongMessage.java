@@ -19,9 +19,18 @@ public class SingyeongMessage {
     private JsonObject data;
     
     static SingyeongMessage fromJson(@Nonnull final JsonObject json) {
+        JsonObject data;
+        final var d = json.getValue("d");
+        if(d instanceof JsonObject) {
+            data = (JsonObject) d;
+        } else if(d instanceof String) {
+            data = new JsonObject((String) d);
+        } else {
+            throw new IllegalStateException("Couldn't parse :d as json object (really wtf am I doing here...)");
+        }
         return new SingyeongMessage(SingyeongOp.fromOp(json.getInteger("op")),
                 json.getString("t", null), json.getLong("ts"),
-                json.getJsonObject("d"));
+                data);
     }
     
     JsonObject toJson() {

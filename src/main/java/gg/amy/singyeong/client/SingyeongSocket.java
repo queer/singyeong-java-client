@@ -91,6 +91,7 @@ public final class SingyeongSocket {
             final var payload = new JsonObject(frame.textData());
             logger.trace("Received new JSON payload: {}", payload);
             final var msg = SingyeongMessage.fromJson(payload);
+            logger.trace("op = {}", msg.op().name());
             switch(msg.op()) {
                 case HELLO: {
                     final var heartbeatInterval = msg.data().getInteger("heartbeat_interval");
@@ -125,6 +126,7 @@ public final class SingyeongSocket {
                     break;
                 }
                 case DISPATCH: {
+                    logger.trace("sending dispatch");
                     final var d = msg.data();
                     singyeong.vertx().eventBus().publish(SingyeongClient.SINGYEONG_DISPATCH_EVENT_CHANNEL,
                             new Dispatch(msg.timestamp(), d.getString("sender"), d.getString("nonce"),
@@ -146,7 +148,7 @@ public final class SingyeongSocket {
     public void send(@Nonnull final SingyeongMessage msg) {
         if(socketRef.get() != null) {
             socketRef.get().writeTextMessage(msg.toJson().encode());
-            logger.debug("Sending Singyeong payload:\n{}", msg.toJson().encodePrettily());
+            logger.debug("Sending singyeong payload:\n{}", msg.toJson().encodePrettily());
         }
     }
     

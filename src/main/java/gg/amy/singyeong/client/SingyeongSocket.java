@@ -130,7 +130,7 @@ public final class SingyeongSocket {
                     final var d = msg.data();
                     singyeong.vertx().eventBus().publish(SingyeongClient.SINGYEONG_DISPATCH_EVENT_CHANNEL,
                             new Dispatch(msg.timestamp(), d.getString("sender"), d.getString("nonce"),
-                                    d.getJsonObject("payload")));
+                                    d.getValue("payload")));
                     break;
                 }
                 case HEARTBEAT_ACK: {

@@ -1,6 +1,5 @@
 package gg.amy.singyeong.data;
 
-import io.vertx.core.json.JsonObject;
 import lombok.Value;
 import lombok.experimental.Accessors;
 
@@ -11,8 +10,8 @@ import lombok.experimental.Accessors;
 @Value
 @Accessors(fluent = true)
 public class Dispatch {
-    private long timestamp;
-    private String sender;
-    private String nonce;
-    private JsonObject data;
+    long timestamp;
+    String sender;
+    String nonce;
+    Object data;
 }
